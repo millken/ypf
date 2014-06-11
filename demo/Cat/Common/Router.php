@@ -58,7 +58,7 @@ REGEX;
         foreach ((array)$route as $key => $val) {
             // Convert wild-cards to RegEx
             $key = str_replace(':any', '.+', str_replace(':num', '[0-9]+', $key));
-
+            echo $path_info . "=>" . $key .  "<br />";
             // Does the RegEx match?
             if (preg_match('#^'.$key.'$#', $uri)) {
 				/*
