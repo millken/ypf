@@ -9,7 +9,7 @@ class User extends \Model\Model {
 	}
 
 	public function getAbc() {
-		$res = $this->db->fetch_all('abc');
+		$res = $this->db->select('select * from abc');
 		return $res;
 	}
 }
