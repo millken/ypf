@@ -48,40 +48,59 @@ REGEX;
 
 
     public function index() {
-        $route = \Ypf\Lib\Config::get("router.route");
+        $route = \Ypf\Lib\Config::get("router");
 
-        $path_info = $this->getUri();
-        $url_segments = !empty($path_info) ? array_filter(explode('/',$path_info)) : array();
-        $uri = implode('/',$url_segments);
+        $uri = $this->getUri();
 
-        // Loop through the route array looking for wild-cards
-        foreach ((array)$route as $key => $val) {
-            // Convert wild-cards to RegEx
-            $key = str_replace(':any', '.+', str_replace(':num', '[0-9]+', $key));
-            echo $path_info . "=>" . $key .  "<br />";
+        //check static route rule
+        if(isset($route['static'][$uri])) {
+            $this->request->get['route'] = $route['static'][$uri];
+        }else
+
+        foreach ((array)$route['variable'] as $key => $val) {
+
+            $reg_table = $this->buildRegexForRoute($this->parse($key));
+
             // Does the RegEx match?
-            if (preg_match('#^'.$key.'$#', $uri)) {
-				/*
-                // Do we have a back-reference?
-                if (strpos(@$val[1], '$') !== FALSE AND strpos($key, '(') !== FALSE) {
-                    //get parameter
-                    $val[1] = preg_replace('#^'.$key.'$#', $val, $uri);
-                    parse_str($val[1], $url_parse);
-                    $this->request->get = array_merge($this->request->get, $url_parse);
-                    print_r( $val );
+            if (preg_match('#^'.$reg_table[0].'$#', $uri, $matches)) {
+                $i = 0;
+                foreach ($reg_table[1] as $key => $value) {
+                    $reg_table[1][$key] = $matches[++$i];
+
+                }
+                $this->request->get = array_merge($this->request->get, $reg_table[1]);
                    
-                }*/
+                
                 $this->request->get['route'] = $val;
+                break;
             }
             
         }
-        //echo $this->request->get['route'];
+
 		if (isset($this->request->get['route'])) {
 			return $this->forward($this->request->get['route']);
 		}
-		echo 'xxxx';
+
     }
 
+    private function buildRegexForRoute($routeData) {
+        $regex = '';
+        $variables = array();
+        foreach ($routeData as $part) {
+            if (is_string($part)) {
+                $regex .= preg_quote($part, '~');
+                continue;
+            }
+
+            list($varName, $regexPart) = $part;
+
+            $variables[$varName] = $varName;
+            $regex .= '(' . $regexPart . ')';
+        }
+
+        return array($regex, $variables);
+    }
+    
     private function getUri() {
         $uri = '';
         if(!empty($_SERVER['PATH_INFO'])) {

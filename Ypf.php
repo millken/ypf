@@ -79,7 +79,6 @@ class Ypf {
 		if(class_exists($class_name) && is_callable(array($class_name, $method))) {
 			$class = new $class_name($this->container);
 			call_user_func_array(array($class, $method), $args);
-			//return $class->getOutput();
 		}else{
 			throw new Exception("Unable to load action: '$action'[$class_name->{$method}]");
 		}
