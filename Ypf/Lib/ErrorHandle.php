@@ -23,7 +23,7 @@ class ErrorHandle {
         $error['file']      = $file;
         $error['line']      = $line;
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
-        $fileContent = highlight_string("<?php \n". $fileContent . "\n ?>", true);
+        $fileContent = highlight_string("<?php \n". $fileContent . "", true);
         $error['detail'] = $fileContent;        
         ob_start();
         debug_print_backtrace();
@@ -57,7 +57,7 @@ class ErrorHandle {
         $error['type']      = get_class($exception);
 
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
-        $fileContent = highlight_string("<?php \n". $fileContent . "\n ?>", true);
+        $fileContent = highlight_string("<?php \n". $fileContent . "", true);
         $error['detail'] = $fileContent;
 
         include __APP__ . "/error_tpl.php";
