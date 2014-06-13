@@ -33,15 +33,9 @@ class ErrorHandle {
                         if (is_object($item)) {
                             $ret .= gettype($item);
                         } elseif (is_array($item)) {
-                            
-                                
-                            try {
-                                $ret .= 'array("';
-                                $ret .= implode('", "', $item);
-                                $ret .= '")';
-                            } catch (Exception $e) {
-                                die('ups!');
-                            }
+                            $ret .= 'array("';
+                            $ret .= implode('", "', array_keys($item));
+                            $ret .= '")';
                         } elseif (is_numeric($item)) {
                             $ret .= $item;
                         } else {
@@ -72,12 +66,12 @@ class ErrorHandle {
         }
 
         include __APP__ . "/error_tpl.php";
-        exit;
+        //exit;
     }
 	
 	public  function Exception($exception) {
         $traceline = "#%s %s(%s): %s(%s) %s( %s )";
-        $msg = "PHP Fatal error:  Uncaught exception '%s' with message '%s' in %s:%s";
+        $msg = "Uncaught exception '%s' with message '%s' in %s:%s";
         $message = sprintf(
             $msg,
             get_class($exception),
@@ -108,15 +102,9 @@ class ErrorHandle {
                     if (is_object($item)) {
                         $ret .= gettype($item);
                     } elseif (is_array($item)) {
-                        
-                            
-                        try {
-                            $ret .= 'array("';
-                            $ret .= implode('", "', $item);
-                            $ret .= '")';
-                        } catch (Exception $e) {
-                            die('ups!');
-                        }
+                        $ret .= 'array("';
+                        $ret .= implode('", "', array_keys($item));
+                        $ret .= '")';
                     } elseif (is_numeric($item)) {
                         $ret .= $item;
                     } else {
@@ -138,8 +126,7 @@ class ErrorHandle {
                 ((isset($stackPoint['function']) ? $stackPoint['function'] : '--')),
                 $ret
             );
-        }
-        $result = array_reverse($result);        
+        }      
         $traceInfo = implode("\n", $result);
         $error = array();
         $error['message']   = $message;
