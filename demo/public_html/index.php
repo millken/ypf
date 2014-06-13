@@ -9,7 +9,7 @@ $app = new \Ypf\Ypf();
 
 \Ypf\Lib\Config::instance();
 
-$db = new \Ypf\Lib\Database(\Ypf\Lib\Config::get('db.test', true));
+$db = new \Ypf\Lib\Database(\Ypf\Lib\Config::get('db.dev', true));
 $app->set('db', $db);
 
 //request
@@ -20,7 +20,7 @@ $response = new \Ypf\Lib\Response();
 $app->set('response', $response);
 
 //log
-$log = new \Ypf\Lib\Log('/data/logs/debug.log');
+$log = new \Ypf\Lib\Log('logs/debug.log');
 $log->SetLevel(0);
 $app->set('log', $log);
 

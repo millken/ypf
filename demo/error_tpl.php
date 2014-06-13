@@ -55,13 +55,15 @@ code{font-size:14px!important;padding:0 .2em!important;border-bottom:1px solid #
 <p><strong>[ Location ]</strong>　FILE: <span class="red"><?php echo $error['file'] ;?></span>　LINE: <span class="red"><?php echo $error['line'];?></span></p>
 <?php }?>
 <p class="title">[ Info ]</p>
-<p class="message">[<?php echo strip_tags($error['type']);?>]<?php echo strip_tags($error['message']);?><br /><pre><code><?php echo $error['detail'];?></code></pre></p>
+<p class="message">[<?php echo strip_tags($error['type']);?>]<?php echo strip_tags($error['message']);?><br />
+<?php echo $error['detail'];?></p>
 <?php if(isset($error['trace'])) {?>
 <p class="title">[ Trace ]</p>
 <p id="trace">
-<?php echo $error['trace'];?>
+<?php echo nl2br($error['trace']);?>
 </p>
 <?php }?>
+
 </div>
 </div>
 </body>

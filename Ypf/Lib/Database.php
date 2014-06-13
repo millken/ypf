@@ -3,7 +3,6 @@
 namespace Ypf\Lib;
 
 use \PDO;
-use \PDOException;
 
 class Database extends PDO
 {
@@ -18,11 +17,13 @@ class Database extends PDO
         	'username' => 'root',
         	'password' => '',
         	'charset' => 'utf8',
+            'timeout' => 3,
         );
         $options = array_merge($default_options, $options);
         $dsn = $this->createdsn($options);
         try {
             $option = $options['charset'] ? array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$options['charset']) : null;
+            $option[PDO::ATTR_TIMEOUT] = $options['timeout'];
             parent::__construct(
                 $dsn,
                 $options['username'],
@@ -31,8 +32,8 @@ class Database extends PDO
             );
             parent::setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(Exception $e) {
-            echo 'Erreur : '.$e->getMessage().'<br />';
-            echo 'N° : '.$e->getCode();
+            echo 'Error : '.$e->getMessage().'<br />';
+            echo 'No : '.$e->getCode();
         }
     }
     
@@ -49,7 +50,7 @@ class Database extends PDO
             $stmt->execute($data);
             return $stmt;
         }
-        catch (PDOException $e) {
+        catch (Exception $e) {
             echo $e->getMessage();
             return false;
         }

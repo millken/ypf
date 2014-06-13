@@ -1,11 +1,15 @@
 <?php
 
+
 namespace Ypf\Lib;
+if(!defined('__ERROR_HANDLE_LEVEL__'))  define('__ERROR_HANDLE_LEVEL__', E_ALL ^ E_WARNING ^ E_NOTICE);
 
 class ErrorHandle {
 
 	public  function Error($code, $message, $file, $line) {
-        ob_end_clean();       
+
+        if ( ($code & __ERROR_HANDLE_LEVEL__) !== $code)return;
+
         $errstr = ' ['.$code.']' . $message.' in '.$file.' on line '.$line;
         $trace          = debug_backtrace();
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
@@ -15,16 +19,18 @@ class ErrorHandle {
 
         $error['message']   = $message;
         $error['type']      = $code;
-        $error['detail']    =   ($line-2).': '.$files[$line-3];
-        $error['detail']   .=   ($line-1).': '.$files[$line-2];
-        $error['detail']   .=   '<font color="#FF6600" >'.($line).': <strong>'.$files[$line-1].'</strong></font>';
-        $error['detail']   .=   ($line+1).': '.$files[$line];
-        $error['detail']   .=   ($line+2).': '.$files[$line+1];
-        $error['class']     =   $class;
-        $error['function']  =   $function;
+
         $error['file']      = $file;
         $error['line']      = $line;
+        $fileContent = self::getContextFileLineError($error['file'], $error['line']);
+        $fileContent = highlight_string("<?php \n". $fileContent . "\n ?>", true);
+        $error['detail'] = $fileContent;        
+        ob_start();
+        debug_print_backtrace();
+        $error['trace'] = ob_get_clean();   
+        ob_end_clean();     
         include __APP__ . "/error_tpl.php";
+        //exit;
 	}
 	
 	public  function Exception($exception) {
@@ -35,55 +41,48 @@ class ErrorHandle {
 
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
         $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
-        $file     =   $trace[0]['file'];
-        $line     =   $trace[0]['line'];
-        $files           =   file($file);
-        $traceInfo      =   '';
-        $time = date('y-m-d H:i:m');
-        foreach($trace as $t) {
-            if(isset($t['file']) && isset($t['line']))
-            $traceInfo .= $t['file'].' ('.$t['line'].') ';
-            if(isset($t['class']) && isset($t['line']))
-            $traceInfo .= $t['class'].$t['type'].$t['function'].'(';
-            $traceInfo .= print_r( self::object2array($t['args']) , true);
-            $traceInfo .=")<br />";
+        if('E'==$trace[0]['function']) {
+            $error['file'] = $trace[0]['file'];
+            $error['line'] = $trace[0]['line'];
+        }else{
+            $error['file'] = $exception->getFile();
+            $error['line'] = $exception->getLine();
         }
+        $files           =   file($error['file']);
+        ob_start();
+        debug_print_backtrace();
+        $error['trace'] = ob_get_clean();
+        ob_end_clean();   
         $error['message']   = $message;
         $error['type']      = get_class($exception);
-        $error['detail']    =   ($line-2).': '.$files[$line-3];
-        $error['detail']   .=   ($line-1).': '.$files[$line-2];
-        $error['detail']   .=   '<font color="#FF6600" >'.($line).': <strong>'.$files[$line-1].'</strong></font>';
-        $error['detail']   .=   ($line+1).': '.$files[$line];
-        $error['detail']   .=   ($line+2).': '.$files[$line+1];
-        $error['class']     =   $class;
-        $error['function']  =   $function;
-        $error['file']      = $file;
-        $error['line']      = $line;
-        $error['trace']     = $traceInfo;
+
+        $fileContent = self::getContextFileLineError($error['file'], $error['line']);
+        $fileContent = highlight_string("<?php \n". $fileContent . "\n ?>", true);
+        $error['detail'] = $fileContent;
+
         include __APP__ . "/error_tpl.php";
 	}
 	
 	//register_shutdown_function(array( new \Ypf\Lib\ErrHandler(), "Shutdown"))
 	public function Shutdown() {
 		if ($error = error_get_last()) {
+            if ( ($error['type'] & __ERROR_HANDLE_LEVEL__) !== $error['type']) return;
 			$this->Error($error['type'], $error['message'], $error['file'], $error['line']);
 		}
 	}	
     public static function getContextFileLineError($filePath, $line, $includeLineNumbers = true) {
         $fileContent = file($filePath);
-        $fileContent = array_slice($fileContent, ($line - 3), 6);
-        $fileContent[2] = str_replace("\n", ' ', $fileContent[2]);
-        $fileContent[2] .= " // <<---- Hey, wake up!, the problem is here!!!\n";
-
-        $k = $line - 3;
+        $fileContent[$line-1] = trim($fileContent[$line-1]) . " // <<---- Hey, phper!, the problem is here, please fix!!!\n";
+        $fileContent = array_slice($fileContent, ($line - 5), 10);
+        $k = $line - 5;
         foreach ($fileContent as $key => $lineContent) {
             $fileContent[$key] = str_replace("\n", ' ', $fileContent[$key]);
             if ($includeLineNumbers) {
                 $k++;
                 if ($k == $line ) {
-                    $fileContent[$key] = sprintf("[%s]\t%s", $k, $lineContent);
+                    $fileContent[$key] = sprintf("%s:\t%s", $k, $lineContent);
                 } else {
-                    $fileContent[$key] = sprintf("%s\t%s", $k, $lineContent);
+                    $fileContent[$key] = sprintf("%s:\t%s", $k, $lineContent);
                 }
             } else {
                 $fileContent[$key] = sprintf("%s", $lineContent);

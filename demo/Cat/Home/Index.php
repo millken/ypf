@@ -10,9 +10,9 @@ class Index extends \Cat\Controller {
 		//echo $user->add(1, 2);
 		$res = $user->getAbc();
 		foreach ($res as $key => $value) {
-			//print_r($value);
+			print_r($value);
 		}
-		//echo date();
+		echo date("H:i:s");
 		$output = print_r($this->request->get, true);
 		$this->log->Debug($output);
 		//$this->assgin('a','aa');

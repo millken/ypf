@@ -6,6 +6,7 @@
 namespace Ypf;
 
 if(!defined('__APP__'))  define('__APP__', __DIR__);
+define("__YPF__", __DIR__);
 
 class Ypf {
     const VERSION = '0.0.1';
