@@ -7,138 +7,60 @@ class ErrorHandle {
 	public  function Error($code, $message, $file, $line) {
         ob_end_clean();       
         $errstr = ' ['.$code.']' . $message.' in '.$file.' on line '.$line;
-		$this->halt($errstr);
-	}
+        $trace          = debug_backtrace();
+        $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
+        $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
 
-    private function halt($error) {
-        if (!is_array($error)) {
-            $traceline = "#%s %s(%s): %s(%s) %s( %s )";
-            $trace          = debug_backtrace();
-            $e['message']   = $error;
-            $e['file']      = $trace[0]['file'];
-            $e['class']     = isset($trace[0]['class'])?$trace[0]['class']:'';
-            $e['function']  = isset($trace[0]['function'])?$trace[0]['function']:'';
-            $e['line']      = $trace[0]['line'];
-            $traceInfo      = '';
-            $time = date('y-m-d H:i:m');
-            $showParameters = 1;
-            $cnt = 0;
-            foreach ($trace as $key => $stackPoint) {
-                $cnt++;
-                if ($showParameters == 1) {
-                    $ret = '';
-                    $keys = array_keys($stackPoint['args']);
-                    $end = end($keys);
-                    foreach($stackPoint['args'] as $key => $item) {
-                        if (is_object($item)) {
-                            $ret .= gettype($item);
-                        } elseif (is_array($item)) {
-                            $ret .= 'array("';
-                            $ret .= implode('", "', array_keys($item));
-                            $ret .= '")';
-                        } elseif (is_numeric($item)) {
-                            $ret .= $item;
-                        } else {
-                            $ret .= "\"$item\"";
-                        }
-                        if ($key != $end) {
-                            $ret .= ', ';
-                        }
-                    }
-                }
-                
-                $result[] = sprintf(
-                    $traceline,
-                    $cnt,
-                    ((isset($stackPoint['file']) ? $stackPoint['file'] : '--' )),
-                    ((isset($stackPoint['line']) ? $stackPoint['line'] : '--' )),
-                    ((isset($stackPoint['class']) ? $stackPoint['class'] : '' )),
-                    ((isset($stackPoint['type']) ? $stackPoint['type'] : '' )),
-                    ((isset($stackPoint['function']) ? $stackPoint['function'] : '--')),
-                    $ret
-                );
-            }
-            $result = array_reverse($result);        
-            $traceInfo = implode("\n", $result);
-            $e['trace']     = $traceInfo;
-        } else {
-            $e              = $error;
-        }
+        $files           =   file($file);
 
+        $error['message']   = $message;
+        $error['type']      = $code;
+        $error['detail']    =   ($line-2).': '.$files[$line-3];
+        $error['detail']   .=   ($line-1).': '.$files[$line-2];
+        $error['detail']   .=   '<font color="#FF6600" >'.($line).': <strong>'.$files[$line-1].'</strong></font>';
+        $error['detail']   .=   ($line+1).': '.$files[$line];
+        $error['detail']   .=   ($line+2).': '.$files[$line+1];
+        $error['class']     =   $class;
+        $error['function']  =   $function;
+        $error['file']      = $file;
+        $error['line']      = $line;
         include __APP__ . "/error_tpl.php";
-        //exit;
-    }
+	}
 	
 	public  function Exception($exception) {
-        $traceline = "#%s %s(%s): %s(%s) %s( %s )";
-        $msg = "Uncaught exception '%s' with message '%s' in %s:%s";
-        $message = sprintf(
-            $msg,
-            get_class($exception),
-            $exception->getMessage(),
-            $exception->getFile(),
-            $exception->getLine()
-        );
-
         $trace = $exception->getTrace();
-        //array_shift($trace);
+        $traceline = "#%s %s(%s): %s(%s) %s( %s )";
+
+        $message = $exception->getMessage();
+
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
         $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
         $file     =   $trace[0]['file'];
         $line     =   $trace[0]['line'];
-        $fileContent           =   file($file);
+        $files           =   file($file);
         $traceInfo      =   '';
         $time = date('y-m-d H:i:m');
-        $result = array();
-        $cnt=0;
-        $showParameters = 1;
-        foreach ($trace as $key => $stackPoint) {
-            $cnt++;
-            if ($showParameters == 1) {
-                $ret = '';
-                $keys = array_keys($stackPoint['args']);
-                $end = end($keys);
-                foreach($stackPoint['args'] as $key => $item) {
-                    if (is_object($item)) {
-                        $ret .= gettype($item);
-                    } elseif (is_array($item)) {
-                        $ret .= 'array("';
-                        $ret .= implode('", "', array_keys($item));
-                        $ret .= '")';
-                    } elseif (is_numeric($item)) {
-                        $ret .= $item;
-                    } else {
-                        $ret .= "\"$item\"";
-                    }
-                    if ($key != $end) {
-                        $ret .= ', ';
-                    }
-                }
-            }
-            
-            $result[] = sprintf(
-                $traceline,
-                $cnt,
-                ((isset($stackPoint['file']) ? $stackPoint['file'] : '--' )),
-                ((isset($stackPoint['line']) ? $stackPoint['line'] : '--' )),
-                ((isset($stackPoint['class']) ? $stackPoint['class'] : '' )),
-                ((isset($stackPoint['type']) ? $stackPoint['type'] : '' )),
-                ((isset($stackPoint['function']) ? $stackPoint['function'] : '--')),
-                $ret
-            );
-        }      
-        $traceInfo = implode("\n", $result);
-        $error = array();
+        foreach($trace as $t) {
+            if(isset($t['file']) && isset($t['line']))
+            $traceInfo .= $t['file'].' ('.$t['line'].') ';
+            if(isset($t['class']) && isset($t['line']))
+            $traceInfo .= $t['class'].$t['type'].$t['function'].'(';
+            $traceInfo .= print_r( self::object2array($t['args']) , true);
+            $traceInfo .=")<br />";
+        }
         $error['message']   = $message;
-        //$error['type']      = $type;
-
+        $error['type']      = get_class($exception);
+        $error['detail']    =   ($line-2).': '.$files[$line-3];
+        $error['detail']   .=   ($line-1).': '.$files[$line-2];
+        $error['detail']   .=   '<font color="#FF6600" >'.($line).': <strong>'.$files[$line-1].'</strong></font>';
+        $error['detail']   .=   ($line+1).': '.$files[$line];
+        $error['detail']   .=   ($line+2).': '.$files[$line+1];
         $error['class']     =   $class;
         $error['function']  =   $function;
         $error['file']      = $file;
         $error['line']      = $line;
         $error['trace']     = $traceInfo;
-
-        $this->halt($error);
+        include __APP__ . "/error_tpl.php";
 	}
 	
 	//register_shutdown_function(array( new \Ypf\Lib\ErrHandler(), "Shutdown"))
@@ -147,29 +69,78 @@ class ErrorHandle {
 			$this->Error($error['type'], $error['message'], $error['file'], $error['line']);
 		}
 	}	
-	
     public static function getContextFileLineError($filePath, $line, $includeLineNumbers = true) {
-		$fileContent = file($filePath);
-		$fileContent = array_slice($fileContent, ($line - 3), 6);
-		$fileContent[2] = str_replace("\n", ' ', $fileContent[2]);
-		$fileContent[2] .= " // <<---- Hey, wake up!, the problem is here!!!\n";
+        $fileContent = file($filePath);
+        $fileContent = array_slice($fileContent, ($line - 3), 6);
+        $fileContent[2] = str_replace("\n", ' ', $fileContent[2]);
+        $fileContent[2] .= " // <<---- Hey, wake up!, the problem is here!!!\n";
 
-		$k = $line - 3;
-		foreach ($fileContent as $key => $lineContent) {
-			$fileContent[$key] = str_replace("\n", ' ', $fileContent[$key]);
-			if ($includeLineNumbers) {
-				$k++;
-				if ($k == $line ) {
-					$fileContent[$key] = sprintf("[%s]\t%s", $k, $lineContent);
-				} else {
-					$fileContent[$key] = sprintf("%s\t%s", $k, $lineContent);
-				}
-			} else {
-				$fileContent[$key] = sprintf("%s", $lineContent);
-			}
-		}
+        $k = $line - 3;
+        foreach ($fileContent as $key => $lineContent) {
+            $fileContent[$key] = str_replace("\n", ' ', $fileContent[$key]);
+            if ($includeLineNumbers) {
+                $k++;
+                if ($k == $line ) {
+                    $fileContent[$key] = sprintf("[%s]\t%s", $k, $lineContent);
+                } else {
+                    $fileContent[$key] = sprintf("%s\t%s", $k, $lineContent);
+                }
+            } else {
+                $fileContent[$key] = sprintf("%s", $lineContent);
+            }
+        }
 
-		return implode("", $fileContent);
+        return implode("", $fileContent);
     }	
+    /**
+     * from https://github.com/chernjie/tracer/edit/master/tracer.php
+     * @param stdClass $object
+     * @param string $property
+     * @return array
+     * @todo not all objects are the same even if they are instantiated from the same class
+     */
+    private static function object2array($object, $_classes = array(), $_level = 0)
+    {
+        if (! is_object($object)) return $object;
+        // $array = preg_replace('/\w+::__set_state/', '', var_export($object, true));
+        // eval('$array = ' . $array . ';');
+        $array = array();
+        $class = get_class($object);
+        array_push($_classes, $class);
+        $reflected = new ReflectionClass($object);
+        $props = $reflected->getProperties();
+        foreach ($props as $prop)
+        {
+            $prop->setAccessible(true);
+            $name = $prop->getName();
+            $value = $prop->getValue($object);
+            if (is_object($value))
+            {
+                $name .= ':' . get_class($value);
+                $value = in_array(get_class($value), $_classes) || $_level > 10
+                    ? get_class($value)
+                    : self::object2array($value, $_classes, $_level + 1);
+            }
+            switch (true)
+            {
+                case $prop->isPrivate():
+                    $name .= ':private';
+                    break;
+                case $prop->isProtected():
+                    $name .= ':protected';
+                    break;
+                case $prop->isPublic():
+                    break;
+                case $prop->isStatic():
+                    $name .= ':static';
+                    break;
+                default:
+                    $name .= '?';
+                    break;
+            }
+            $array[$name] = $value;
+        }
+        return $array;
+    }
 
 }

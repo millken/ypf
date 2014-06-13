@@ -43,19 +43,23 @@ a:hover{ text-decoration:none;color:#FF6600;}
 	color:red;
 	font-weight:bold;
 }
+pre{margin:1em 0;font-size:12px;background-color:#eee;border:1px solid #ddd;padding:5px;line-height:1.5em;color:#444;overflow:auto;-webkit-box-shadow:rgba(0,0,0,0.07) 0 1px 2px inset;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;}
+
+code{font-size:14px!important;padding:0 .2em!important;border-bottom:1px solid #DEDEDE !important}
+
 </style>
 </head>
 <body>
 <div class="notice">
-<?php if(isset($e['file'])) {?>
-<p><strong>[ Location ]</strong>　FILE: <span class="red"><?php echo $e['file'] ;?></span>　LINE: <span class="red"><?php echo $e['line'];?></span></p>
+<?php if(isset($error['file'])) {?>
+<p><strong>[ Location ]</strong>　FILE: <span class="red"><?php echo $error['file'] ;?></span>　LINE: <span class="red"><?php echo $error['line'];?></span></p>
 <?php }?>
 <p class="title">[ Info ]</p>
-<p class="message"><?php echo strip_tags($e['message']);?></p>
-<?php if(isset($e['trace'])) {?>
+<p class="message">[<?php echo strip_tags($error['type']);?>]<?php echo strip_tags($error['message']);?><br /><pre><code><?php echo $error['detail'];?></code></pre></p>
+<?php if(isset($error['trace'])) {?>
 <p class="title">[ Trace ]</p>
 <p id="trace">
-<?php echo nl2br($e['trace']);?>
+<?php echo $error['trace'];?>
 </p>
 <?php }?>
 </div>
