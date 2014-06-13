@@ -19,8 +19,7 @@ class Ypf {
 
 	protected static $instances = null;
 
-    public static function autoload($className)
-    {
+    public static function autoload($className) {
         $thisClass = str_replace(__NAMESPACE__.'\\', '', __CLASS__);
         $baseDir = __DIR__;
         if (substr(trim($className, '\\'), 0, strlen($thisClass)) === $thisClass) {
@@ -44,17 +43,25 @@ class Ypf {
         }
     }
     
-    public function __construct(array $userSettings = array())
-    {
+    public function __construct(array $userSettings = array()) {
 		spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
-		set_exception_handler(array($this, 'exception_handler'));
+
+		date_default_timezone_set('UTC');
+		self::registerErrorHandle();
+
     	$this->container = new \Ypf\Helper\Set();
 		self::$instances = &$this;
     }
 
-    public static function getInstance()
-    {
+    public static function registerErrorHandle() {
+		
+		register_shutdown_function(array(new \Ypf\Lib\ErrorHandle(),'Shutdown'));
+        set_error_handler(array(new \Ypf\Lib\ErrorHandle(), 'Error'));
+        set_exception_handler(array(new \Ypf\Lib\ErrorHandle(),'Exception'));    	
 
+    }
+
+    public static function getInstance() {
         return self::$instances;
     }
     
@@ -99,12 +106,6 @@ class Ypf {
 		}
 		
 	}
-	
-	public function exception_handler(Exception $e) {
-		printf("<pre style=\"text-align: left; background-color: #fcc; border: 1px solid #600; color: #600; display: block; margin: 1em 0; padding: .33em 6px\">%s(%d): %s (%d) [%s]\n%s\n</pre>",
-			   $e->getFile(), $e->getLine(), $e->getMessage(), $e->getCode(), get_class($e), $e->getTraceAsString());
-	}
-	
     
 	public function set($name, $value) {
 		return $this->__set($name, $value);
@@ -114,23 +115,19 @@ class Ypf {
 		return $this->__get($name);
 	}
 	
-    public function __get($name)
-    {
+    public function __get($name) {
         return $this->container[$name];
     }
 
-    public function __set($name, $value)
-    {
+    public function __set($name, $value) {
         $this->container[$name] = $value;
     }
 
-    public function __isset($name)
-    {
+    public function __isset($name) {
         return isset($this->container[$name]);
     }
 
-    public function __unset($name)
-    {
+    public function __unset($name) {
         unset($this->container[$name]);
     }    
 }
