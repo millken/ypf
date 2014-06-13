@@ -3,7 +3,7 @@ error_reporting(E_ALL ^ E_WARNING ^ E_NOTICE);
 
 define("__APP__", dirname(__DIR__));
 
-require '../../Ypf.php';
+require '../../Ypf/Ypf.php';
 
 $app = new \Ypf\Ypf();
 
