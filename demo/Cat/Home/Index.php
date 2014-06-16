@@ -19,4 +19,12 @@ class Index extends \Cat\Controller {
 		//$this->render();
 		$this->response->setOutput($output);
 	}
+
+	public function viewtest1() {
+		$view = new \Cat\View($this);
+		$view->setTemplateDir(__APP__ . '/CatView/');
+		$view->assign('username', 'tester');
+		$view->assign('header', $this->action("\Cat\Common\Header\index"));
+		$view->display("index.tpl");
+	}
 }

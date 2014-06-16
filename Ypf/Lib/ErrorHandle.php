@@ -2,20 +2,19 @@
 
 
 namespace Ypf\Lib;
+
 if(!defined('__ERROR_HANDLE_LEVEL__'))  define('__ERROR_HANDLE_LEVEL__', E_ALL ^ E_WARNING ^ E_NOTICE);
 
 class ErrorHandle {
 
 	public  function Error($code, $message, $file, $line) {
 
-        if ( ($code & __ERROR_HANDLE_LEVEL__) !== $code)return;
+        if ( ($code & __ERROR_HANDLE_LEVEL__) !== $code) return;
 
         $errstr = ' ['.$code.']' . $message.' in '.$file.' on line '.$line;
         $trace          = debug_backtrace();
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
         $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
-
-        $files           =   file($file);
 
         $error['message']   = $message;
         $error['type']      = $code;
@@ -48,7 +47,7 @@ class ErrorHandle {
             $error['file'] = $exception->getFile();
             $error['line'] = $exception->getLine();
         }
-        $files           =   file($error['file']);
+
         ob_start();
         debug_print_backtrace();
         $error['trace'] = ob_get_clean();
@@ -57,22 +56,25 @@ class ErrorHandle {
         $error['type']      = get_class($exception);
 
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
-        $fileContent = highlight_string("<?php \n". $fileContent . "", true);
+        $fileContent = highlight_string("<?php \n". $fileContent . "...*/", true);
         $error['detail'] = $fileContent;
 
         include __APP__ . "/error_tpl.php";
+        //exit;
 	}
 	
 	//register_shutdown_function(array( new \Ypf\Lib\ErrHandler(), "Shutdown"))
 	public function Shutdown() {
 		if ($error = error_get_last()) {
             if ( ($error['type'] & __ERROR_HANDLE_LEVEL__) !== $error['type']) return;
+            print_r($error);
 			$this->Error($error['type'], $error['message'], $error['file'], $error['line']);
 		}
 	}	
     public static function getContextFileLineError($filePath, $line, $includeLineNumbers = true) {
+        if(!is_file($filePath)) return "";
         $fileContent = file($filePath);
-        $fileContent[$line-1] = trim($fileContent[$line-1]) . " // <<---- Hey, phper!, the problem is here, please fix!!!\n";
+        $fileContent[$line-1] = rtrim($fileContent[$line-1]) . " /* Hey, phper!, the problem is here, please fix!!!*/\n";
         $fileContent = array_slice($fileContent, ($line - 5), 10);
         $k = $line - 5;
         foreach ($fileContent as $key => $lineContent) {

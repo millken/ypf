@@ -78,7 +78,7 @@ REGEX;
         }
 
 		if (isset($this->request->get['route'])) {
-			return $this->forward($this->request->get['route']);
+			return $this->action($this->request->get['route']);
 		}
 
     }

@@ -9,7 +9,7 @@ $app = new \Ypf\Ypf();
 
 \Ypf\Lib\Config::instance();
 
-$db = new \Ypf\Lib\Database(\Ypf\Lib\Config::get('db.dev', true));
+$db = new \Ypf\Lib\Database(\Ypf\Lib\Config::get('db.test', true));
 $app->set('db', $db);
 
 //request
