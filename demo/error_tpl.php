@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>system error occurred</title>
+<title>Error Occurred</title>
 <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
 <style>
 body{
@@ -62,7 +62,7 @@ code{font-size:14px!important;padding:0 .2em!important;border-bottom:1px solid #
 <div class="code"><?php echo $error['detail'];?></div>
 <?php }?>
 <p class="title">[ Info ]</p>
-<p class="message">[<?php echo strip_tags($error['type']);?>]<?php echo strip_tags($error['message']);?>
+<p class="message"><strong><?php echo strip_tags($error['type']);?></strong> :  <?php echo strip_tags($error['message']);?>
 </p>
 <?php if(isset($error['trace'])) {?>
 <p class="title">[ Trace ]</p>

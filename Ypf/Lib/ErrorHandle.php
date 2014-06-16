@@ -7,22 +7,22 @@ if(!defined('__ERROR_HANDLE_LEVEL__'))  define('__ERROR_HANDLE_LEVEL__', E_ALL ^
 
 class ErrorHandle {
 
-	public  function Error($code, $message, $file, $line) {
+	public  function Error($type, $message, $file, $line) {
 
-        if ( ($code & __ERROR_HANDLE_LEVEL__) !== $code) return;
+        if ( ($type & __ERROR_HANDLE_LEVEL__) !== $type) return;
 
-        $errstr = ' ['.$code.']' . $message.' in '.$file.' on line '.$line;
+        $errstr = ' ['.$type.']' . $message.' in '.$file.' on line '.$line;
         $trace          = debug_backtrace();
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
         $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
 
         $error['message']   = $message;
-        $error['type']      = $code;
+        $error['type']      = self::FriendlyErrorType($type);
 
         $error['file']      = $file;
         $error['line']      = $line;
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
-        $fileContent = highlight_string("<?php \n". $fileContent . "", true);
+        $fileContent = highlight_string("<?php \n". $fileContent . "...*/", true);
         $error['detail'] = $fileContent;        
         ob_start();
         debug_print_backtrace();
@@ -35,8 +35,6 @@ class ErrorHandle {
 	public  function Exception($exception) {
         $trace = $exception->getTrace();
         $traceline = "#%s %s(%s): %s(%s) %s( %s )";
-
-        $message = $exception->getMessage();
 
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
         $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
@@ -52,7 +50,7 @@ class ErrorHandle {
         debug_print_backtrace();
         $error['trace'] = ob_get_clean();
         ob_end_clean();   
-        $error['message']   = $message;
+        $error['message']   = $exception->getMessage();
         $error['type']      = get_class($exception);
 
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
@@ -144,4 +142,39 @@ class ErrorHandle {
         return $array;
     }
 
+    public static function FriendlyErrorType($type) {
+        switch($type) {
+            case E_ERROR: // 1 //
+                return 'E_ERROR';
+            case E_WARNING: // 2 //
+                return 'E_WARNING';
+            case E_PARSE: // 4 //
+                return 'E_PARSE';
+            case E_NOTICE: // 8 //
+                return 'E_NOTICE';
+            case E_CORE_ERROR: // 16 //
+                return 'E_CORE_ERROR';
+            case E_CORE_WARNING: // 32 //
+                return 'E_CORE_WARNING';
+            case E_CORE_ERROR: // 64 //
+                return 'E_COMPILE_ERROR';
+            case E_CORE_WARNING: // 128 //
+                return 'E_COMPILE_WARNING';
+            case E_USER_ERROR: // 256 //
+                return 'E_USER_ERROR';
+            case E_USER_WARNING: // 512 //
+                return 'E_USER_WARNING';
+            case E_USER_NOTICE: // 1024 //
+                return 'E_USER_NOTICE';
+            case E_STRICT: // 2048 //
+                return 'E_STRICT';
+            case E_RECOVERABLE_ERROR: // 4096 //
+                return 'E_RECOVERABLE_ERROR';
+            case E_DEPRECATED: // 8192 //
+                return 'E_DEPRECATED';
+            case E_USER_DEPRECATED: // 16384 //
+                return 'E_USER_DEPRECATED';
+        }
+        return "";
+    } 
 }
