@@ -33,10 +33,6 @@ class Load {
 			return $this;
 		}
 
-		if ($params !== NULL && ! is_array($params))
-		{
-			$params = NULL;
-		}
 
 		$this->load_class($library, $params, $object_name);
 		return $this;

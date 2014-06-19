@@ -209,7 +209,7 @@ class Database extends PDO
         }else{
             $statement = array_shift($args);
 
-            $params = is_array($args[0]) ? $args[0] : $args;
+            $params = isset($args[0]) && is_array($args[0]) ? $args[0] : $args;
         }        
         if(!empty($statement)) {
             $this->options['where'][] = $statement;
