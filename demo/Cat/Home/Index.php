@@ -20,7 +20,7 @@ class Index extends \Cat\Controller {
 		$this->response->setOutput($output);
 	}
 
-	public function viewtest12() {
+	public function viewtest1() {
 		$view = new \Cat\View($this);
 		$view->setTemplateDir(__APP__ . '/CatView/');
 		$view->assign('username', 'tester');

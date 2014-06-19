@@ -6,9 +6,9 @@ abstract class Controller
 {
 	public static $container;
 		
-	public function __construct($container)
+	public function __construct()
 	{
-		self::$container = $container;
+		self::$container = \Ypf\Ypf::getContainer();
 	}
 	
 	protected function action($action, $args = array())

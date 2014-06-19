@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Ypf\Lib;
 
 if(!defined('__ERROR_HANDLE_LEVEL__'))  define('__ERROR_HANDLE_LEVEL__', E_ALL ^ E_WARNING ^ E_NOTICE);
@@ -24,48 +23,53 @@ class ErrorHandle {
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
         $fileContent = highlight_string("<?php \n". $fileContent . "...*/", true);
         $error['detail'] = $fileContent;        
-        ob_start();
-        debug_print_backtrace();
-        $error['trace'] = ob_get_clean();   
-        ob_end_clean();     
-        include __APP__ . "/error_tpl.php";
-        //exit;
+        //ob_start();
+        //debug_print_backtrace();
+        //$error['trace'] = ob_get_clean();   
+        //ob_end_clean();
+        ob_clean();   
+        include 'ErrorHandle.tpl';
+        exit;
 	}
 	
 	public  function Exception($exception) {
         $trace = $exception->getTrace();
-        $traceline = "#%s %s(%s): %s(%s) %s( %s )";
+        $trace = array_reverse($trace);
 
         $class    =   isset($trace[0]['class'])?$trace[0]['class']:'';
         $function =   isset($trace[0]['function'])?$trace[0]['function']:'';
-        if('E'==$trace[0]['function']) {
-            $error['file'] = $trace[0]['file'];
-            $error['line'] = $trace[0]['line'];
-        }else{
+        $error['file'] = $trace[0]['file'];
+        $error['line'] = $trace[0]['line'];
+        if(empty($error['file']) or empty($error['line'])) {
             $error['file'] = $exception->getFile();
             $error['line'] = $exception->getLine();
         }
 
-        ob_start();
-        debug_print_backtrace();
-        $error['trace'] = ob_get_clean();
-        ob_end_clean();   
+        $error['trace'] = "";
+        foreach ((array)$trace as $k => $v) {
+            array_walk($v['args'], function (&$item, $key) { 
+                $item = str_replace("\n", "", var_export($item, true)); 
+            });
+			if(isset($v['file']))
+            $error['trace'] .= '#' . $k . ' ' . $v['file'] . '(' . $v['line'] . '): ' .
+             (isset($v['class']) ? $v['class'] . '->' : '') . $v['function'] . '(' . implode(', ', $v['args']) . ')' . "\n"; 
+        }
+
         $error['message']   = $exception->getMessage();
         $error['type']      = get_class($exception);
 
         $fileContent = self::getContextFileLineError($error['file'], $error['line']);
         $fileContent = highlight_string("<?php \n". $fileContent . "...*/", true);
         $error['detail'] = $fileContent;
-
-        include __APP__ . "/error_tpl.php";
-        //exit;
+        ob_clean(); 
+        include 'ErrorHandle.tpl';
+        exit;
 	}
 	
 	//register_shutdown_function(array( new \Ypf\Lib\ErrHandler(), "Shutdown"))
 	public function Shutdown() {
 		if ($error = error_get_last()) {
             if ( ($error['type'] & __ERROR_HANDLE_LEVEL__) !== $error['type']) return;
-            print_r($error);
 			$this->Error($error['type'], $error['message'], $error['file'], $error['line']);
 		}
 	}	
@@ -91,56 +95,6 @@ class ErrorHandle {
 
         return implode("", $fileContent);
     }	
-    /**
-     * from https://github.com/chernjie/tracer/edit/master/tracer.php
-     * @param stdClass $object
-     * @param string $property
-     * @return array
-     * @todo not all objects are the same even if they are instantiated from the same class
-     */
-    private static function object2array($object, $_classes = array(), $_level = 0)
-    {
-        if (! is_object($object)) return $object;
-        // $array = preg_replace('/\w+::__set_state/', '', var_export($object, true));
-        // eval('$array = ' . $array . ';');
-        $array = array();
-        $class = get_class($object);
-        array_push($_classes, $class);
-        $reflected = new ReflectionClass($object);
-        $props = $reflected->getProperties();
-        foreach ($props as $prop)
-        {
-            $prop->setAccessible(true);
-            $name = $prop->getName();
-            $value = $prop->getValue($object);
-            if (is_object($value))
-            {
-                $name .= ':' . get_class($value);
-                $value = in_array(get_class($value), $_classes) || $_level > 10
-                    ? get_class($value)
-                    : self::object2array($value, $_classes, $_level + 1);
-            }
-            switch (true)
-            {
-                case $prop->isPrivate():
-                    $name .= ':private';
-                    break;
-                case $prop->isProtected():
-                    $name .= ':protected';
-                    break;
-                case $prop->isPublic():
-                    break;
-                case $prop->isStatic():
-                    $name .= ':static';
-                    break;
-                default:
-                    $name .= '?';
-                    break;
-            }
-            $array[$name] = $value;
-        }
-        return $array;
-    }
 
     public static function FriendlyErrorType($type) {
         switch($type) {

@@ -8,36 +8,41 @@ namespace Ypf\Lib;
 class Config
 {
     /**
-     * 配置文件名称
-     * @var string
-     */
-    public static $configFile;
-    
-    /**
      * 配置数据
      * @var array
      */
     public static $config = array();
     
-    /**
-     * 实例
-     * @var instance of Config
-     */
+    public static $path = array();
+    
     protected static $instances = null;
-
+    
     /**
      * 构造函数
-     * @throws \Exception
+     * @param empty|string|array $config
      */
-    private function __construct()
+    public function __construct()
      {
-        foreach(glob(__APP__ . '/conf.d/*.conf') as $config_file)
+     	$args = func_get_args();
+     	if(!empty($args)) {
+     		foreach($args as $path) {
+     			$this->load($path);
+     		}
+     	}
+     	self::$instances = &$this;
+	 }
+
+	public function load($path) 
+	{
+		if(is_file($path)) return self::parseFile($path);
+		
+        foreach(glob($path. '/*.conf') as $config_file)
         {
-            $worker_name = basename($config_file, '.conf');
-            self::$config[$worker_name] = self::parseFile($config_file);
-        }
-    }
-    
+        	self::$path[] = $path;
+            $name = basename($config_file, '.conf');
+            self::$config[$name] = self::parseFile($config_file);
+        }	
+	}
     /**
      * 解析配置文件
      * @param string $config_file
@@ -53,24 +58,15 @@ class Config
         return $config;
     }
 
-   /**
-    * 获取实例
-    * @return \Man\Core\Lib\instance
-    */
-    public static function instance()
-    {
-        if (!self::$instances) {
-            self::$instances = new self();
-        }
+    public static function getInstance() {
         return self::$instances;
     }
-
     /**
      * 获取配置
      * @param string $uri
      * @return mixed
      */
-    public static function get($uri)
+    public function get($uri)
     {
         $node = self::$config;
         $paths = explode('.', $uri);
@@ -88,19 +84,11 @@ class Config
      * 获取所有的workers
      * @return array
      */
-    public static function getAllWorkers()
+    public static function getAll()
     {
          $copy = self::$config;
          return $copy;
     }
-    
-    /**
-     * 重新载入配置
-     * @return void
-     */
-    public static function reload()
-    {
-        self::$instances = null;
-    }
+
     
 }

@@ -5,16 +5,15 @@
 
 namespace Ypf;
 
-if(!defined('__APP__'))  define('__APP__', __DIR__);
 define("__YPF__", __DIR__);
 
 class Ypf {
-    const VERSION = '0.0.1';
+    const VERSION = '0.0.2';
 
-    public $container;
+    private $container = array();
 
-
-    protected static $apps = array();
+	
+    protected static $userSettings = array();
 
     private $pre_action = array();
 
@@ -26,7 +25,7 @@ class Ypf {
         if (substr(trim($className, '\\'), 0, strlen($thisClass)) === $thisClass) {
             $baseDir = substr($baseDir, 0, -strlen($thisClass));
         }else{
-        	$baseDir = __APP__;
+        	$baseDir = self::$userSettings['root'];
         }
         $baseDir .= '/'; 
         $className = ltrim($className, '\\');
@@ -45,12 +44,12 @@ class Ypf {
     }
     
     public function __construct(array $userSettings = array()) {
+    	self::$userSettings = $userSettings;
 		spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
 
 		date_default_timezone_set('UTC');
 		self::registerErrorHandle();
 
-    	$this->container = new \Ypf\Helper\Set();
 		self::$instances = &$this;
     }
 
@@ -62,8 +61,12 @@ class Ypf {
 
     }
 
-    public static function getInstance() {
+    public static function &getInstance() {
         return self::$instances;
+    }
+
+    public static function &getContainer() {
+    	return self::$instances->container;
     }
     
 	public function addPreAction($pre_action, $args = array()) {
@@ -85,7 +88,7 @@ class Ypf {
 			
 		}
 		if(class_exists($class_name) && is_callable(array($class_name, $method))) {
-			$class = new $class_name($this->container);
+			$class = new $class_name();
 			return call_user_func_array(array($class, $method), $args);
 		}else{
 			throw new Exception("Unable to load action: '$action'[$class_name->{$method}]");

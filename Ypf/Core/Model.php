@@ -8,7 +8,7 @@ abstract class Model
 		
 	public function __construct()
 	{
-		self::$container = \Ypf\Ypf::getInstance()->container;
+		self::$container = \Ypf\Ypf::getContainer();
 	}
 		
 	public function __set($name, $value) {
