@@ -64,16 +64,16 @@ class Config
     
     public function set($uri, $data)
     {
-	  $levels = explode('.',$uri))
+	  $levels = explode('.', $uri);
 
 	  $pointer = &self::$config;
 	  for ($i = 0; $i < sizeof($levels); $i++) {
 		if (!isset($pointer[$levels[$i]]))
-		  $pointer[$levels[$i]]=array();
-		 $pointer = &$pointer[$levels[$i]];
-	  } // for
+		  $pointer[$levels[$i]] = array();
+		$pointer = &$pointer[$levels[$i]];
+	  }
 
-	  $pointer = $value;
+	  $pointer = $data;
     }
     
     /**

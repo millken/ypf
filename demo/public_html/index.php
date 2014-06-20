@@ -5,11 +5,15 @@ define("__APP__", dirname(__DIR__));
 
 require '../../Ypf/Ypf.php';
 
-$app = new \Ypf\Ypf();
+$ypfSetting = array(
+	'root' => __APP__,
+	);
+$app = new \Ypf\Ypf($ypfSetting);
 
-\Ypf\Lib\Config::instance();
+$config = new \Ypf\Lib\Config(__APP__ . '/conf.d/');
+$app->set('config', $config);
 
-$db = new \Ypf\Lib\Database(\Ypf\Lib\Config::get('db.test', true));
+$db = new \Ypf\Lib\Database($config->get('db.dev'));
 $app->set('db', $db);
 
 //request
@@ -24,6 +28,7 @@ $log = new \Ypf\Lib\Log('logs/debug.log');
 $log->SetLevel(0);
 $app->set('log', $log);
 
+$app->addPreAction("Cat\Common\Init\config");
 $app->addPreAction("Cat\Common\Router\index");
 
 $app->disPatch();
