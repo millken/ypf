@@ -61,6 +61,21 @@ class Config
     public static function getInstance() {
         return self::$instances;
     }
+    
+    public function set($uri, $data)
+    {
+	  $levels = explode('.',$uri))
+
+	  $pointer = &self::$config;
+	  for ($i = 0; $i < sizeof($levels); $i++) {
+		if (!isset($pointer[$levels[$i]]))
+		  $pointer[$levels[$i]]=array();
+		 $pointer = &$pointer[$levels[$i]];
+	  } // for
+
+	  $pointer = $value;
+    }
+    
     /**
      * 获取配置
      * @param string $uri
