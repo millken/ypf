@@ -53,6 +53,7 @@ class Database extends PDO
         $stmt = parent::prepare($query);
     
         $stmt->execute($data);
+        $this->options = array();
         return $stmt;
     }
     
