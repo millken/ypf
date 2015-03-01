@@ -10,23 +10,15 @@ class Master
     
     const NAME = 'ypfjobber';
     
+    protected static $_statusInfo = array();
     protected static $_masterPid = 0;
     protected static $_configPath = '';
-    
-    /**
-     * server统计信息 ['start_time'=>time_stamp, 'worker_exit_code'=>['worker_name1'=>[code1=>count1, code2=>count2,..], 'worker_name2'=>[code3=>count3,...], ..] ]
-     * @var array
-     */    
-    protected static $serverStatusInfo = array(
-        'start_time' => 0,
-        'worker_exit_code' => array(),
-    );
-    
-    /**
-     * 用于保存所有子进程pid ['worker_name1'=>[pid1=>pid1,pid2=>pid2,..], 'worker_name2'=>[pid3,..], ...]
-     * @var array
-     */
+
+    //用于保存所有子进程pid 
     protected static $_workpids = array();
+
+    //记录pid重启次数，5秒内超过10次则不再重启
+    protected static $_worknames = array();
     
      public static function run() {
 
@@ -42,22 +34,11 @@ class Master
         
         // 创建worker进程
         self::createWorkers();
-
-        //self::runTask();        
-        // 主循环
-        self::loop();        
+    
+        // 监测worker
+        self::monitorWorkers();        
     }
     
-    protected static function runTask() {
-        \Ypf\Cli\Task::init();
-        foreach(\Ypf\Lib\Config::getAll() as $key => $worker) {
-			if(false !== strpos(strtolower($key), 'action')){
-				if(isset($worker['status']) && $worker['status']) {
-					\Ypf\Cli\Task::add($worker['time_long'], $worker['action'], null, $worker['persistent']);
-				}
-			}
-        }
-    }
 
     /**
      * 安装相关信号控制器
@@ -71,28 +52,10 @@ class Master
         pcntl_signal(SIGUSR2, array('\Ypf\Cli\Master', 'signalHandler'), false);
         //reload
         pcntl_signal(SIGHUP, array('\Ypf\Cli\Master', 'signalHandler'), false);
-        // 设置子进程退出信号处理函数
-        //pcntl_signal(SIGCHLD, array('\Ypf\Cli\Master', 'signalHandler'), false);
         pcntl_signal(SIGPIPE, SIG_IGN, false);
     
     }
     
-    /**
-     * 忽略信号
-     * @return void
-     */
-    protected static function ignoreSignal()
-    {
-        // 设置忽略信号
-        pcntl_signal(SIGPIPE, SIG_IGN);
-        pcntl_signal(SIGTTIN, SIG_IGN);
-        pcntl_signal(SIGTTOU, SIG_IGN);
-        pcntl_signal(SIGQUIT, SIG_IGN);
-        pcntl_signal(SIGALRM, SIG_IGN);
-        pcntl_signal(SIGINT, SIG_IGN);
-        pcntl_signal(SIGUSR1, SIG_IGN);
-        pcntl_signal(SIGHUP, SIG_IGN);
-    }
     
     /**
      * 设置server信号处理函数
@@ -114,10 +77,6 @@ class Master
             // 平滑重启server信号
             case SIGHUP:
                 echo("Server reloading\n");
-                \Ypf\Cli\Task::delAll();
-                //\Ypf\Lib\Config::clear();
-                //\Ypf\Lib\Config::load(__CONF__);
-                //self::runTask();
                 break;
         }
     }
@@ -132,11 +91,10 @@ class Master
 		 // 主进程部分
 		if(self::$_masterPid === posix_getpid())
 		{
-			foreach((array)self::$_workpids as $work_name => $pids) {
-				foreach((array)$pids as $pid) {
-					echo "stopping worker:  $work_name         [  OK  ]\n";
-					posix_kill($pid, SIGKILL );
-				}
+            self::$_masterPid = 0;
+			foreach((array)self::$_workpids as $pid => $work_name) {
+				echo "stopping worker:  $work_name         [  OK  ]\n";
+				posix_kill($pid, SIGKILL );
 			}
 			echo "stopping master:           [  OK  ]\n";
 		}else{
@@ -204,7 +162,7 @@ class Master
         }
     
         // 记录server启动时间
-        self::$serverStatusInfo['start_time'] = time();
+        self::$_statusInfo['start_time'] = time();
     }
     
     /**
@@ -217,19 +175,7 @@ class Master
         foreach (\Ypf\Lib\Config::getAll() as $worker_name=>$config)
         {
         	if(!$config['status']) continue;
-            // 初始化
-            if(empty(self::$_workpids[$worker_name]))
-            {
-                self::$_workpids[$worker_name] = array();
-            }
-            $pid = self::forkOneWorker($worker_name, $config);
-            // child exit,may not loop
-            if($pid == 0)
-            {
-                echo("starting worker : $worker_name        [ FAIL ] \n");
-            }else{
-                echo("starting worker : $worker_name        [ OK ]\n");
-            }
+            self::forkOneWorker($worker_name, $config);
         }
     }
     
@@ -240,38 +186,28 @@ class Master
      */
     protected static function forkOneWorker($worker_name, $config)
     {
-        // 创建子进程
         $pid = pcntl_fork();
         
-        // 先处理收到的信号
-        pcntl_signal_dispatch();
         
         // 父进程
         if($pid > 0)
         {
-            self::$_workpids[$worker_name][$pid] = $pid;
-            return $pid;
+            self::$_workpids[$pid] = $worker_name;
+            echo("starting worker : $worker_name        [ OK ]\n");
         }
         // 子进程
         elseif($pid === 0)
         {
-            // 忽略信号
-            self::ignoreSignal();
-                        
-    
-            // 关闭输出
-            self::resetStdFd();
-    
+            self::$_workpids = array();
             // 尝试设置子进程进程名称
             self::setWorkerProcessTitle($worker_name);
             \Ypf\Ypf::getInstance()->disPatch($config['action'], null);
-            return 0;
+            exit(250);
         }
         // 出错
         else
         {
-            echo("create worker fail worker_name:$worker_name detail:pcntl_fork fail");
-            return $pid;
+            echo("starting worker : $worker_name        [ FAIL ] \n");
         }
     }
     
@@ -287,25 +223,6 @@ class Master
     public static function getMasterPid()
     {
         return self::$_masterPid;
-    }
-    
-    /**
-     * 关闭标准输入输出
-     * @return void
-     */
-    protected static function resetStdFd()
-    {
-        // 开发环境不关闭标准输出，用于调试
-        if(posix_ttyname(STDOUT))
-        {
-            return;
-        }
-        global $STDOUT, $STDERR;
-        @fclose(STDOUT);
-        @fclose(STDERR);
-        // 将标准输出重定向到/dev/null
-        $STDOUT = fopen('/dev/null',"rw+");
-        $STDERR = fopen('/dev/null',"rw+");
     }
     
     /**
@@ -336,21 +253,42 @@ class Master
             setproctitle($title);
         }
     }
-    
-    /**
-     * 主进程主循环 主要是监听子进程退出、服务终止、平滑重启信号
-     * @return void
-     */
-    public static function loop()
-    {
-        $siginfo = array();
-        while(1)
-        {
-            @pcntl_sigtimedwait(array(SIGCHLD), $siginfo, 1);
-            // 初始化任务系统
-            //\Ypf\Cli\Task::tick();
-            // 触发信号处理
+
+    protected static function monitorWorkers() {
+        while(1) {
+            // 如果有信号到来，尝试触发信号处理函数
             pcntl_signal_dispatch();
-        }
+            // 挂起进程，直到有子进程退出或者被信号打断
+            $pid = pcntl_wait($status, WUNTRACED);
+            // 有子进程退出
+            if($pid > 0 && self::$_masterPid)
+            {
+                $config_all = \Ypf\Lib\Config::getAll();
+                $worker_name = self::$_workpids[$pid];
+                $config = $config_all[$worker_name];
+                unset(self::$_workpids[$pid]);
+                //若worker 5秒内spawn的次数超过10次，则停止spawn
+                if(!isset(self::$_worknames[$worker_name]))
+                    self::$_worknames[$worker_name] = array(
+                    'restart_nums' => 0, 
+                    'restart_time' => 0
+                    );
+                ++self::$_worknames[$worker_name]['restart_nums'];
+                $stopworker = false;
+                if(self::$_worknames[$worker_name]['restart_nums'] % 10 == 0) {
+                    if(time() - self::$_worknames[$worker_name]['restart_time'] <= 5) {
+                        $stopworker = true;
+                    }
+                    self::$_worknames[$worker_name]['restart_time'] = time();
+                }
+                if(!$stopworker) {
+                    if($config['status']);
+                    self::forkOneWorker($worker_name, $config);                       
+                }
+            }elseif(!self::$_masterPid){
+                exit(0);
+            }
+        }            
     }
+    
 }

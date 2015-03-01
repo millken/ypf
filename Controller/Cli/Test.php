@@ -12,7 +12,7 @@ class Test extends \Controller\Cli\Common {
 	
 	public function index(){
         while( 1 ) {
-            $msg =  date('Y-m-d H:i:s') . "::index1";
+            $msg =  date('Y-m-d H:i:s') . "===" . getmypid();
             $this->log->Info($msg);
             sleep(3);
         }
