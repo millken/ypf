@@ -11,6 +11,12 @@ abstract class Controller
 		self::$container = \Ypf\Ypf::getContainer();
 	}
 	
+	protected function getCalledControllerName()
+	{
+		$qualifiedClassParts = explode('\\', get_called_class());
+		return end($qualifiedClassParts);
+	}
+		
 	protected function action($action, $args = array())
 	{
 		return \Ypf\Ypf::getInstance()->execute($action, $args);

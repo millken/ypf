@@ -25,7 +25,7 @@ class Ypf {
         if (substr(trim($className, '\\'), 0, strlen($thisClass)) === $thisClass) {
             $baseDir = substr($baseDir, 0, -strlen($thisClass));
         }else{
-        	$baseDir = self::$userSettings['root'];
+        	$baseDir = self::getUserSetting('root');
         }
         $baseDir .= '/'; 
         $className = ltrim($className, '\\');
@@ -47,8 +47,13 @@ class Ypf {
     	self::$userSettings = $userSettings;
 		spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
 
-		date_default_timezone_set('UTC');
-		self::registerErrorHandle();
+		if(self::getUserSetting('time_zone')) {
+			date_default_timezone_set(self::$userSettings['time_zone']);
+		}
+		
+		if(self::getUserSetting('friendly_error') && PHP_SAPI !== 'cli') {
+			self::registerErrorHandle();
+		}
 
 		self::$instances = &$this;
     }
@@ -76,8 +81,7 @@ class Ypf {
 							);
 		return $this;
 	}
-
-    
+   
 	public function execute($action, $args = array()) {
 		if (is_array($action)) {
 			list($class_name, $method) = $action;
@@ -109,6 +113,10 @@ class Ypf {
 			$action = $this->execute($action);
 		}
 		
+	}
+	
+	private static function getUserSetting($key) {
+		return isset(self::$userSettings[$key]) ? self::$userSettings[$key] : null;
 	}
     
 	public function set($name, $value) {
