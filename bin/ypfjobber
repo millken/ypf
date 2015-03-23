@@ -42,11 +42,6 @@ $app->set('load', $load);
 
 $app->set('config', $config);
 
-//log
-$log = new \Ypf\Lib\Log('./debug.log');
-$log->SetLevel(0);
-$app->set('log', $log);
-
 \Ypf\Cli\Master::setConfigPath(__CONF__);
 
 switch($cmd)
@@ -58,7 +53,8 @@ switch($cmd)
         job_stop();
         break;
     case 'restart':
-        \Ypf\Cli\Master::run();
+        job_stop();
+        job_run();
         break;
     case 'kill':
     	force_kill();

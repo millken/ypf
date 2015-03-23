@@ -2,6 +2,13 @@
 namespace Controller\Cli;
 
 class Test extends \Controller\Cli\Common {
+	private $log;
+	
+	public function __construct() {
+		//log
+		$this->log = new \Ypf\Lib\Log('./debug.log');
+		$this->log->SetLevel(0);
+	}
 	
 	public function index(){
         while( 1 ) {
