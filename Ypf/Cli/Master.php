@@ -134,11 +134,11 @@ class Master
 		{
 			foreach((array)self::$_workpids as $work_name => $pids) {
 				foreach((array)$pids as $pid) {
-					echo "worker({$pid}) [$work_name] exiting...\n";
+					echo "stopping worker:  $work_name         [  OK  ]\n";
 					posix_kill($pid, SIGKILL );
 				}
 			}
-			exit("master(". self::$_masterPid . ") exiting...\n");
+			echo "stopping master:           [  OK  ]\n";
 		}else{
 			exit(0);
 		}
@@ -223,11 +223,12 @@ class Master
                 self::$_workpids[$worker_name] = array();
             }
             $pid = self::forkOneWorker($worker_name, $config);
-            print("\n($worker_name)pid=". $pid);
             // child exit,may not loop
             if($pid == 0)
             {
-                echo(" $worker_name CHILD EXIT ERR : " . print_r($config, true));
+                echo("starting worker : $worker_name        [ FAIL ] \n");
+            }else{
+                echo("starting worker : $worker_name        [ OK ]\n");
             }
         }
     }
