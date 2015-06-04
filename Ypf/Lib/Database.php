@@ -51,9 +51,8 @@ class Database extends PDO
     {
         $this->lastsql = $this->setLastSql($query, $data);
         $stmt = parent::prepare($query);
-    
         $stmt->execute($data);
-        $this->options = array();
+        $this->options = $this->params = array();
         return $stmt;
     }
     
