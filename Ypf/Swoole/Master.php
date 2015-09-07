@@ -26,7 +26,7 @@ class Master
         swoole_set_process_name(self::NAME.':master with-config:' . self::$_configPath);
 
         // 变成守护进程
-        \swoole_process::daemon(true, true);
+        //\swoole_process::daemon(true, true);
                 
         // 保存进程pid
         self::savePid();
@@ -95,19 +95,19 @@ class Master
         foreach (\Ypf\Lib\Config::getAll() as $worker_name=>$config)
         {
         	if(!$config['status']) continue;
-        	print_r($config);
             self::forkOneWorker($worker_name, $config);
         }
         $serv->on("Receive",function() {    try    { }catch(Exception $e){ }});
-        $serv->on("Task", "Ypf\Swoole\Task::Task");
-        $serv->on("Finish", "Ypf\Swoole\Task::Finish");
+        $serv->on("Task", "\Ypf\Swoole\Task::task");
+        $serv->on("Finish", "\Ypf\Swoole\Task::finish");
         $serv->on('WorkerStart', function ($serv, $worker_id){
+            \Ypf\Swoole\Task::setServe($serv);
         	if($worker_id >= $serv->setting['worker_num']) {
-        		\swoole_set_process_name(self::NAME.":task worker $worker_id");
+        		\swoole_set_process_name(self::NAME.":task_worker $worker_id");
         	}else{
-        		\swoole_set_process_name(self::NAME.":task master $worker_id");
+        		\swoole_set_process_name(self::NAME.":task_master $worker_id");
         	}
-        });
+        });       
         $serv->start();
     }
     

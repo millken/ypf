@@ -19,12 +19,22 @@ class Test extends \Controller\Cli\Common {
 	}
     
 	public function index2(){
-
+		\Ypf\Swoole\Task::add(array("\Controller\Cli\Test", 't_1') , array(), array("\Controller\Cli\Test", 'r_1'));
 	}
 	
+	public static function t_1 () {
+		$msg =  date('Y-m-d H:i:s') . "===" . getmypid();
+		$this->log->Info($msg);
+	}
+
+	public static function r_1 () {
+		$msg =  date('Y-m-d H:i:s') . "===" . getmypid();
+		$this->log->Info($msg);
+	}	
 	
 	public function synctest() {
 	while( 1 ) {
+		$this->index2();
 		$urls = array(
 			'http://www.google.com/',
 			'http://www.facebook.com/',
