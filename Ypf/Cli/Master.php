@@ -201,7 +201,7 @@ class Master
             self::$_workpids = array();
             // 尝试设置子进程进程名称
             self::setWorkerProcessTitle($worker_name);
-            \Ypf\Ypf::getInstance()->disPatch($config['action'], null);
+            \Ypf\Ypf::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
             exit(250);
         }
         // 出错

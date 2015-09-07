@@ -16,8 +16,8 @@ class Dns extends \Controller\Cli\Common {
 	public function Stats(){
 		while (true) {
 			$offset = intval(@file_get_contents($this->config->get("dns.kafka.tmp_pos_file")));
-			$this->log->Info("start offset = $offset");
-			$this->_dnstats($offset);
+			$this->log->Info("dns start offset = $offset");
+			$this->_stats($offset);
 			usleep(200000);
 		}
 	}
@@ -39,8 +39,8 @@ class Dns extends \Controller\Cli\Common {
 		}
 		return false;
 	}    
-    private function _dnstats($offset) {
-    	if($offset == 0) $offset = \Kafka::OFFSET_BEGIN;
+    private function _stats($offset) {
+    	if($offset == 0) $offset = \Kafka::OFFSET_END;
 		$this->kafka = new \Kafka(
 			$this->config->get("dns.kafka.host")/*,
 			array(
@@ -50,6 +50,7 @@ class Dns extends \Controller\Cli\Common {
 				Kafka::RETRY_INTERVAL   => 25,//default is 100
 			)*/
 		);
+		$this->db = new \Ypf\Lib\Database($this->config->get('dns.db'));
 
 		$topic = $this->config->get("dns.kafka.topic");
 		//use it to OPTIONALLY specify a partition to consume from
@@ -67,7 +68,9 @@ class Dns extends \Controller\Cli\Common {
 	        list($remote_ip, $server_ip) = explode("|", $json['remote_ip']);
 	        $domain = substr($json['domain'], 0, -1);
 	        $pridomain = $this->getPrimaryDomain($domain);
+	        if(!$prodomain) continue;
 	        if(!isset($domains["$m-$d-$h-$server_ip"])) $domains["$m-$d-$h-$server_ip"] = array();
+	        if(!isset($domains["$m-$d-$h-$server_ip"][$pridomain])) $domains["$m-$d-$h-$server_ip"][$pridomain] = 0;
 	        $domains["$m-$d-$h-$server_ip"][$pridomain]++;
 			$this->log->Debug(__FILE__ . ":". __LINE__ . "\n" . $m.$d.$h . $domain);
 		}
@@ -87,7 +90,7 @@ class Dns extends \Controller\Cli\Common {
 
     	);
     	*/
-		$this->db = new \Ypf\Lib\Database($this->config->get('dns.db'));
+		
 		foreach($domains as $date => $domain) {
 			foreach($domain as $key => $value) {
 				 list($m, $d, $h, $server_ip) = explode("-", $date);

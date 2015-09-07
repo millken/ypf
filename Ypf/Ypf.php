@@ -110,7 +110,7 @@ class Ypf {
 			}
 		}
 		while ($action) {
-			$action = $this->execute($action);
+			$action = $this->execute($action, $args);
 		}
 		
 	}
