@@ -23,13 +23,15 @@ class Test extends \Controller\Cli\Common {
 	}
 	
 	public static function t_1 () {
-		$msg =  date('Y-m-d H:i:s') . "===" . getmypid();
-		$this->log->Info($msg);
+		$msg =  date('Y-m-d H:i:s') . "t_1 >>>" . getmypid();
+		echo $msg;
+		return $msg;
 	}
 
 	public static function r_1 () {
-		$msg =  date('Y-m-d H:i:s') . "===" . getmypid();
-		$this->log->Info($msg);
+		$msg =  date('Y-m-d H:i:s') . "r_1 <<<" . getmypid();
+		echo $msg;
+		return $msg;
 	}	
 	
 	public function synctest() {

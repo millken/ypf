@@ -8,13 +8,7 @@ namespace Ypf\Swoole;
 class Task
 {
     protected static $tasks = array();
-    static $serv = null;
 
-    public static function setServe($serv)
-    {
-    	self::$serv = $serv;
-    	call_user_func(array(&self::$serv, 'task'), serialize($data));
-    }
     /**
      * 
      * 添加一个任务
@@ -25,22 +19,29 @@ class Task
      */
     public static function add($func, $args = array(), $callback)
     {
-    	print_r(self::$serv);
+    	$config = \Ypf\Lib\Config::getAll();
+
     	$data = array(
     		'func' => $func,
     		'args' => $args,
     		'callback' => $callback
     		);
-    	//call_user_func(array(&self::$serv, 'task'), serialize($data));
-        self::$serv->task(serialize($data));
+    	print_r($data);
+    	//call_user_func(array($config["swoole"]["serv"], 'task'), serialize($data));
+        $config["swoole"]["serv"]->task(serialize($data));
     }
 
-	public static function task(\swoole_server $serv, int $task_id, int $from_id, string $data) {
+	public static function task($serv, $task_id, $from_id, $data) {
 		echo sprintf("task_id=%d, from_id=%d, data=%s", $task_id, $from_id, $data);
-		return 1;
+		$data = unserialize($data);
+		$result = call_user_func_array($data["func"], $data["args"]);
+		$results = array('callback' => $data['callback'], 'result' => $result);
+		$serv->finish(serialize($results));
+
 	}
 	
-	public static function finish(\swoole_server $serv, int $task_id, string $data) {
+	public static function finish($serv, $task_id, $data) {
+		echo "ffffffffffff>>" . $data;
 	}
 }
 

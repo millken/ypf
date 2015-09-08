@@ -29,15 +29,18 @@ class Master
         //\swoole_process::daemon(true, true);
                 
         // 保存进程pid
-        self::savePid();
+        //self::savePid();
         
         // 创建worker进程
         self::createWorkers();
             
         // 监测worker
-        self::monitorWorkers();        
+        //self::monitorWorkers();        
     }
     
+    public static function setServ($serv) {
+    	self::$_serv = $serv;
+    }
     
     public static function setConfigPath($config_path)
     {
@@ -86,29 +89,21 @@ class Master
      */
     protected static function createWorkers()
     {
-    	$serv = new \swoole_server("/var/run/ypf.sock", 0, SWOOLE_BASE, SWOOLE_UNIX_STREAM);
-		$serv->set(array(
-			'task_worker_num' => 10, //task num
-			'worker_num' => 2,    //worker num
-		));    	
         // 循环读取配置创建一定量的worker进程
-        foreach (\Ypf\Lib\Config::getAll() as $worker_name=>$config)
+        $configall = \Ypf\Lib\Config::getAll();
+        //swoole_timer_after(2000, "\Ypf\Swoole\Master::forkWorkers");
+        $configall['swoole']['serv']->start();
+
+    }
+    
+    public static function forkWorkers()
+    {
+	    $configall = \Ypf\Lib\Config::getAll();
+        foreach ($configall as $worker_name=>$config)
         {
-        	if(!$config['status']) continue;
+        	if($worker_name == 'swoole' || !$config['status']) continue;
             self::forkOneWorker($worker_name, $config);
-        }
-        $serv->on("Receive",function() {    try    { }catch(Exception $e){ }});
-        $serv->on("Task", "\Ypf\Swoole\Task::task");
-        $serv->on("Finish", "\Ypf\Swoole\Task::finish");
-        $serv->on('WorkerStart', function ($serv, $worker_id){
-            \Ypf\Swoole\Task::setServe($serv);
-        	if($worker_id >= $serv->setting['worker_num']) {
-        		\swoole_set_process_name(self::NAME.":task_worker $worker_id");
-        	}else{
-        		\swoole_set_process_name(self::NAME.":task_master $worker_id");
-        	}
-        });       
-        $serv->start();
+        }	    
     }
     
     /**
