@@ -260,6 +260,7 @@ class Master
             pcntl_signal_dispatch();
             // 挂起进程，直到有子进程退出或者被信号打断
             $pid = pcntl_wait($status, WUNTRACED);
+            pcntl_signal_dispatch();
             // 有子进程退出
             if($pid > 0 && self::$_masterPid)
             {

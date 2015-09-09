@@ -3,7 +3,13 @@ namespace Controller\Cli;
 
 class Test extends \Controller\Cli\Common {
 	private $log;
-	
+	private $urls = array(
+			'http://www.google.com/',
+			'http://www.facebook.com/',
+			'http://www.v2ex.com/',
+			'http://www.yahoo.com/',
+			'http://www.qq.com/'
+		);
 	public function __construct() {
 		//log
 		$this->log = new \Ypf\Lib\Log('./debug.log');
@@ -22,8 +28,8 @@ class Test extends \Controller\Cli\Common {
 		\Ypf\Swoole\Task::add(array("\Controller\Cli\Test", 't_1') , array(), array("\Controller\Cli\Test", 'r_1'));
 	}
 	
-	public static function t_1 () {
-		$msg =  date('Y-m-d H:i:s') . "t_1 >>>" . getmypid();
+	public static function t_1 ($args = array()) {
+		$msg =  sprintf("%s t_1 >>> pid= %d, args = %s\n", date('Y-m-d H:i:s'), getmypid(), print_r($args, true));
 		echo $msg;
 		return $msg;
 	}
@@ -31,22 +37,23 @@ class Test extends \Controller\Cli\Common {
 	public static function r_1 () {
 		$msg =  date('Y-m-d H:i:s') . "r_1 <<<" . getmypid();
 		echo $msg;
-		return $msg;
-	}	
+	}
+	
+	public function asynctest() {
+		echo "start async\n";
+		$r = \Ypf\Swoole\Task::thread($this->urls, array("\Controller\Cli\Test", 't_1'));
+		print_r($r);
+		echo "end async\n";
+	}
+		
 	
 	public function synctest() {
 	while( 1 ) {
 		$this->index2();
-		$urls = array(
-			'http://www.google.com/',
-			'http://www.facebook.com/',
-			'http://www.v2ex.com/',
-			'http://www.yahoo.com/',
-			'http://www.qq.com/'
-		);
+
 		$t = microtime(true);
-		foreach($urls as $url) {
-			$r = $this->curl_get($url);
+		foreach($this->urls as $url) {
+			$r = self::curl_get($url);
 			//$this->log->Info($r);
 		}
 		$tt = number_format((microtime(true)-$t),4).'s';
@@ -55,12 +62,9 @@ class Test extends \Controller\Cli\Common {
 		}
 	}
 	
-	private function curl_get($url) {
+	public static function curl_get($url) {
 		
 		$ch = \curl_init();
-		if (!$ch) {
-			exit('内部错误：服务器不支持CURL');
-		}
 		//echo ($url);
 		\curl_setopt($ch, CURLOPT_TIMEOUT, 5); //5秒超时
         \curl_setopt($ch, CURLOPT_URL, $url);
