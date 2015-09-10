@@ -8,7 +8,9 @@ class Test extends \Controller\Cli\Common {
 			'http://www.facebook.com/',
 			'http://www.v2ex.com/',
 			'http://www.yahoo.com/',
-			'http://www.qq.com/'
+			'http://www.qq.com/',
+			'http://www.twitter.com',
+			'http://www.yundun.cn',			
 		);
 	public function __construct() {
 		//log
@@ -29,27 +31,33 @@ class Test extends \Controller\Cli\Common {
 	}
 	
 	public static function t_1 ($args = array()) {
-		$msg =  sprintf("%s t_1 >>> pid= %d, args = %s\n", date('Y-m-d H:i:s'), getmypid(), print_r($args, true));
-		echo $msg;
+		$msg =  sprintf("%s t_1 >>> pid= %d\n", date('Y-m-d H:i:s'), getmypid());
 		return $msg;
 	}
 
-	public static function r_1 () {
-		$msg =  date('Y-m-d H:i:s') . "r_1 <<<" . getmypid();
-		echo $msg;
+	public static function r_1 ($task_id, $result) {
+		$msg =  date('Y-m-d H:i:s') . "r_1 <<<" . getmypid(). $result;
+		echo $msg. "\n";
 	}
 	
 	public function asynctest() {
+		while( 1 ) {
 		echo "start async\n";
-		$r = \Ypf\Swoole\Task::thread($this->urls, array("\Controller\Cli\Test", 't_1'));
-		print_r($r);
+		$t = microtime(true);
+		$this->index2();
+		$r = \Ypf\Swoole\Task::thread($this->urls, array("\Controller\Cli\Test", 'curl_get'));
+		//print_r($r);
+		$tt = number_format((microtime(true)-$t),4).'s';
+		$this->log->Info("asyntest curl 5url time: " . $tt);		
 		echo "end async\n";
+		sleep(5);
+		}		
 	}
 		
 	
 	public function synctest() {
 	while( 1 ) {
-		$this->index2();
+		//$this->index2();
 
 		$t = microtime(true);
 		foreach($this->urls as $url) {
@@ -58,7 +66,7 @@ class Test extends \Controller\Cli\Common {
 		}
 		$tt = number_format((microtime(true)-$t),4).'s';
 		$this->log->Info("syntest curl 5url time: " . $tt);
-		sleep(10);
+		sleep(5);
 		}
 	}
 	

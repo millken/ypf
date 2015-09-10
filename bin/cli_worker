@@ -49,7 +49,7 @@ $app->set('config', $config);
 $serv = new \swoole_server("/var/run/ypf.sock", 0, SWOOLE_PROCESS, SWOOLE_UNIX_STREAM);
 //$serv = new \swoole_server("127.0.0.1", 1001,  SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
 $serv->set(array(
-	'task_worker_num' => 2, //task num
+	'task_worker_num' => 8, //task num
 	'worker_num' => 1,    //worker num
 ));    	
 

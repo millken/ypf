@@ -26,7 +26,6 @@ class Task
     		'callback' => $callback,
     		'thread' => $thread,
     		);
-    	print_r($data);
     	//call_user_func(array($config["swoole"]["serv"], 'task'), serialize($data));
         $config["swoole"]["serv"]->task(serialize($data));
     }
@@ -38,6 +37,7 @@ class Task
     
     public static function get($key) {
     	$file = "/dev/shm/" . $key;
+    	if(!is_file($file))return null;
     	$data = file_get_contents($file);
     	return unserialize($data);
     }
@@ -54,23 +54,20 @@ class Task
     	$data['tasks'] = $total_jobs;
     	self::set($unid, $data);
     	for($i=0; $i< $data['tasks']; $i++) {
-    		self::add($func, array($jobs[$i]), null, array('_task_uid' => $unid));
+    		self::add($func, array($jobs[$i]), null, array('task' => $unid, 'id' => $i));
     	}
-    	print_r($data);
-    	/*
-    	while($swooletasks[$unid]['tasks']) {
-    		//echo "test do..\n";
+    	while($data['tasks']) {
+    		$data = self::get($unid);
     		usleep(200000);
     	}
-    	*/
-    	//$result = self::$tasks[$unid]['result'];
-    	//unset(self::$tasks[$unid]);
+    	$result = $data['results'];
+    	self::del($unid);
     	return $result;
     } 
 
 	//task worker
 	public static function task($serv, $task_id, $from_id, $data) {
-		echo sprintf("task_id=%d, from_id=%d, data=%s\n", $task_id, $from_id, $data);
+		//echo sprintf("pid=%d, task_id=%d, from_id=%d, data=%s\n", getmypid(), $task_id, $from_id, $data);
 		$data = unserialize($data);
 		$result = call_user_func_array($data["func"], $data["args"]);
 		$results = array('callback' => $data['callback'], 'result' => $result, 'thread' => $data['thread']);
@@ -79,7 +76,14 @@ class Task
 	}
 	
 	public static function finish($serv, $task_id, $data) {
-		echo sprintf("pid = %d fnish = %s, tasks=%s\n",getmypid(), print_r($data, true), print_r(self::get($data['thread']["_task_uid"]), true));
+		if(!empty($data['thread'])) {
+			$key = $data['thread']['task'];
+			$value = self::get($key);
+			$value['results'][$data['thread']['id']] = $data['result'];
+			$value['tasks'] -= 1;
+			self::set($key, $value);
+		}
+		//echo sprintf("pid = %d fnish = %s, value = %s\n",getmypid(), print_r($data, true), print_r($value, true));
 		if($data['callback']) {
 			$data["args"] = array('task_id' => $task_id, 'result'=> $data['result']);
 			call_user_func_array($data["callback"], $data["args"]);
