@@ -46,8 +46,23 @@ class Task
 	    $file = "/dev/shm/" . $key;
 	    if(is_file($file)) unlink($file);
     }
-        
-    public static function thread($jobs = [], $func, $timeout= 7.0) {
+
+	/**
+	 *
+	 * 添加一个定时器
+	 *
+	 */
+	public static function tick($ms, $callback, $param = null) {
+		$config = \Ypf\Lib\Config::getAll();
+		$config["swoole"]["serv"]->tick($ms, $callback, $param);
+	}
+
+	/**
+	 *
+	 * 多线程并发阻塞获取
+	 *
+	 */	
+    public static function thread($jobs = array(), $func, $timeout= 7.0) {
     	$unid = uniqid("ypf");
     	$total_jobs = count($jobs);
     	$data = array();
@@ -63,7 +78,7 @@ class Task
     	$result = $data['results'];
     	self::del($unid);
     	return $result;
-    } 
+    }
 
 	//task worker
 	public static function task($serv, $task_id, $from_id, $data) {

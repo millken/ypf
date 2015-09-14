@@ -26,7 +26,7 @@ class Master
         swoole_set_process_name(self::NAME.':master with-config:' . self::$_configPath);
 
         // 变成守护进程
-        //\swoole_process::daemon(true, true);
+        \swoole_process::daemon(true, true);
                 
         // 保存进程pid
         //self::savePid();

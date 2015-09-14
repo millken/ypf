@@ -53,6 +53,19 @@ class Load {
 			include_once($file);
 		}
 	}
+	
+	public function file($file) {
+		$files = array(
+			self::$base . $file, 
+			$file,
+		);
+		foreach($files as $f) {
+			if(is_file($f)) {
+				include_once($f);
+				break;
+			}
+		}
+	}
 
 	protected function load_class($class, $params = NULL, $object_name = NULL)
 	{

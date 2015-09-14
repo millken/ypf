@@ -25,7 +25,6 @@ define("__ROOT__",dirname(__DIR__));
 
 define("__CONF__",__ROOT__. '/conf.d/cli');
 
-define('YPF_PID_FILE',  '/var/run/ypf.pid');
 
 require (__ROOT__ . '/Ypf/Ypf.php');
 
@@ -116,7 +115,6 @@ function force_kill()
             }
         }
     }
-    if(is_file(YPF_PID_FILE)) unlink(YPF_PID_FILE);
 }
 
 function job_sig($sig)
@@ -131,15 +129,8 @@ function job_sig($sig)
 
 function job_run()
 {
-	if(is_file(YPF_PID_FILE)) exit("server is running!\n");
 	
 	\Ypf\Swoole\Master::run();
-}
-
-function job_stop()
-{
-	job_sig(SIGINT);
-    if(is_file(YPF_PID_FILE)) unlink(YPF_PID_FILE);
 }
 
 
