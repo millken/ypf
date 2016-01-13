@@ -4,14 +4,15 @@ namespace Ypf\Lib;
 
 use \PDO;
 
-class Database extends PDO
+class Database
 {
 
     protected $options = array();
     protected $params = array();
     protected $lastsql = "";
+    protected $dsn, $pdo;
     // 链操作方法列表
-    protected $methods = array('from', 'field', 'table','order','alias','having','group','lock','distinct','auto');
+    protected $methods = array('from', 'data', 'field', 'table','order','alias','having','group','lock','distinct','auto');
     public function __construct($options = array())
     {
         $default_options = array(
@@ -24,22 +25,8 @@ class Database extends PDO
         	'charset' => 'utf8',
             'timeout' => 3,
         );
-        $options = array_merge($default_options, $options);
-        $dsn = $this->createdsn($options);
-        try {
-            $option = $options['charset'] ? array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$options['charset']) : null;
-            $option[PDO::ATTR_TIMEOUT] = $options['timeout'];
-            parent::__construct(
-                $dsn,
-                $options['username'],
-                $options['password'],
-                $option
-            );
-            parent::setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch(Exception $e) {
-            echo 'Error : '.$e->getMessage().'<br />';
-            echo 'No : '.$e->getCode();
-        }
+        $this->options = array_merge($default_options, $options);
+        $this->dsn = $this->createdsn($options);
     }
     
 	private function createdsn($options)
@@ -47,31 +34,43 @@ class Database extends PDO
 		return $options['dbtype'] . ':host=' . $options['host'] . ';dbname=' . $options['dbname'] . ';port=' . $options['port'];
 	}
 
-    public function executeQuery($query, $data = array())
+    public function query($query, $data = array())
     {
         $this->lastsql = $this->setLastSql($query, $data);
-        $stmt = parent::prepare($query);
+		if (PHP_SAPI == 'cli')
+			try {
+				$this->connection()->query("SHOW STATUS;")->execute();
+			} catch(\PDOException $e) {
+				if($e->getCode() != 'HY000' || !stristr($e->getMessage(), 'server has gone away')) {
+					throw $e;
+				}
+				$this->reconnect();
+			}	
+        $stmt = $this->connection()->prepare($query);
         $stmt->execute($data);
         $this->options = $this->params = array();
         return $stmt;
     }
     
-    public function insert($query, $data = array())
+    public function insert($data = array())
     {
-        return $this->executeQuery($query, $data) ? ( parent::lastInsertId() ? parent::lastInsertId() : true ) : false;
+        $this->options['type'] = 'INSERT';
+        return $this->save($data);
     }
 
-    public function select($sql = null)
+    public function select($sql = null, $data = array())
     {
         $sql = $sql ? $sql : $this->getQuery();
-        $stmt = $this->executeQuery($sql, $this->params);
+        $data = empty($data) ? $this->params : $data;
+        $stmt = $this->query($sql, $data);
 		
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     }
 
-    private function setLastSql($string,$data) {
-        $indexed=$data==array_values($data);
+	private function setLastSql($string,$data)
+    {
+        $indexed = $data == array_values($data);
         foreach($data as $k=>$v) {
             if(is_string($v)) $v="'$v'";
             if($indexed) $string=preg_replace('/\?/',$v,$string,1);
@@ -79,7 +78,37 @@ class Database extends PDO
         }
         return $string;        
     }
-    public function getLastSql() {
+    
+	public function connect()
+	{
+		try {	
+			$option = $this->options['charset'] ? array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$this->options['charset']) : null;
+			$option[PDO::ATTR_TIMEOUT] = $this->options['timeout'];
+			$this->pdo = new \PDO(
+				$this->dsn,
+				$this->options['username'],
+				$this->options['password'],
+				$option
+			);
+			$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		} catch(Exception $e) {
+			throw new Exception($e);
+		}
+        return $this->pdo;
+    }
+	public function reconnect()
+	{
+        $this->pdo = null;
+        return $this->connect();
+    }
+    
+	protected function connection()
+	{
+        return $this->pdo instanceof \PDO ? $this->pdo : $this->connect();
+    }
+    
+	public function getLastSql()
+	{
         return $this->lastsql;
     }
 
@@ -87,57 +116,88 @@ class Database extends PDO
     {
         $sql = $sql ? $sql : $this->getQuery();
 
-        $stmt = $this->executeQuery($sql, $this->params);
+        $stmt = $this->query($sql, $this->params);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result;
     }    
     
-    public function update($query, $data = array())
+
+    public function update($data = array())
     {
-        return $this->executeQuery($query, $data);
+        $this->options['type'] = 'UPDATE';
+        return $this->save($data);
     }
 
-    public function delete($query, $data = array())
+    public function delete()
     {
-        return $this->executeQuery($query, $data);
+        $this->options['type'] = 'DELETE';
+        return $this->save();
     }
 
-    public function fetchOne($sql = null) {
+	public function fetchOne($sql = null)
+	{
         $this->options['limit'] = 1;
         $sql = $sql ? $sql : $this->getQuery();
 
-        $stmt = $this->executeQuery($sql, $this->params);
+        $stmt = $this->query($sql, $this->params);
         $result = $stmt->fetch(PDO::FETCH_NUM);
 
         if(isset($result[0])) return $result[0];
         return null;
     }
 
-    public function save($data = array()) {
-        if(empty($data)) return null;
-        $keys = array_keys($data);
-        $fields = '`'.implode('`, `',$keys).'`';
-        $placeholder = substr(str_repeat('?,',count($keys)),0,-1);
-        $query = "INSERT INTO `" . $this->options['table'][0] . "`($fields) VALUES($placeholder)";
+	public function save($data = array())
+	{
+        if(!empty($data)) $this->data($data);
+        if(!isset($this->options['type'])) {
+            $this->options['type'] = isset($this->options['where']) ? 'UPDATE' : 'INSERT';
+        }
 
-        return $this->executeQuery($query, array_values($data)) ? ( parent::lastInsertId() ? parent::lastInsertId() : true ) : false;
+        switch ($this->options['type']) {
+            case 'INSERT':
+                $keys = array_keys($this->options['data']);
+                $fields = '`'.implode('`, `',$keys).'`';
+                $placeholder = substr(str_repeat('?,',count($keys)),0,-1);
+                $query = "INSERT INTO `" . $this->options['table'] . "`($fields) VALUES($placeholder)";
+
+                return $this->query($query, array_values($data)) ? ( parent::lastInsertId() ? parent::lastInsertId() : true ) : false;
+                break;
+            case 'UPDATE':
+                $update_field = array();
+                $this->params = array_merge(array_values($this->options['data']), $this->params);
+                foreach ($this->options['data'] as $key => $value) {
+                    $update_field[] = "`$key`= ?";
+                }
+                $query = "UPDATE `" . $this->options['table'] . "` SET " . implode(",", $update_field) .  "WHERE " . implode(" AND ", $this->options['where']);
+                $this->query($query, $this->params);
+                break;
+            case 'DELETE':
+                $query = "DELETE FROM `" . $this->options['table'] . "`WHERE " . implode(" AND ", $this->options['where']);
+                $this->query($query, $this->params);            
+                break;
+            default:
+                # code...
+                break;
+        }
+        return true;
     }
 
-    private function getQuery() {
+	private function getQuery()
+	{
         $sql = "SELECT ";
         //parse field
         if(isset($this->options['field'])) {
-            $sql .= " " . implode(", ", $this->options['field']). " ";
+            $sql .= " " . $this->options['field'] . " ";
         }else{
             $sql .= " * ";
         }
         //parse table
         if(isset($this->options['table'])) {
-            $sql .= " FROM " . implode(", ", $this->options['table']). " ";
+            $sql .= " FROM " . $this->options['table']. " ";
         }
         //parse join
         if(isset($this->options['join'])) {
-            $sql .= implode(", ", $this->options['join']). " ";
+            $sql .= $this->options['join'] . " ";
         }        
         //parse where
         if(isset($this->options['where'])) {
@@ -145,15 +205,15 @@ class Database extends PDO
         }
         //parse group
         if(isset($this->options['group'])) {
-            $sql .= "GROUP BY " . implode(", ", $this->options['group']). " ";
+            $sql .= "GROUP BY " .  $this->options['group'] . " ";
         }        
         //parse having
         if(isset($this->options['having'])) {
-            $sql .= "HAVING " . implode(", ", $this->options['having']). " ";
+            $sql .= "HAVING " . $this->options['having'] . " ";
         }
         //parse order
         if(isset($this->options['order'])) {
-            $sql .= "ORDER BY " . implode(", ", $this->options['order']). " ";
+            $sql .= "ORDER BY " . $this->options['order'] . " ";
         }
         //parse limit
         if(isset($this->options['limit'])) {
@@ -162,21 +222,23 @@ class Database extends PDO
         return $sql;                    
     }
 
-    public function __call($method,$args) {
+	public function __call($method,$args)
+	{
         if(in_array(strtolower($method),$this->methods,true)) {
-            $this->options[strtolower($method)][] =   $args[0];
+            $this->options[strtolower($method)] =   $args[0];
             return $this;
         }elseif(in_array(strtolower($method),array('count','sum','min','max','avg'),true)){
             $field =  (isset($args[0]) && !empty($args[0]))?$args[0]:'*';
             $as = '_' . strtolower($method);
-            $this->options['field'] = array( strtoupper($method) .'('.$field.') AS ' . $as);
+            $this->options['field'] =  strtoupper($method) .'('.$field.') AS ' . $as;
             return $this->fetchOne();
         }else{
             return null;
         }
     }
     
-    public function addParams($params) {
+	public function addParams($params)
+	{
         if (is_null($params)) {
             return;
         }
@@ -192,6 +254,7 @@ class Database extends PDO
     * Add statement for where - ... WHERE [?] ...
     *
     * Examples:
+    * $sql->where(array('uid'=>3, 'pid'=>2));
     * $sql->where("user_id = ?", $user_id);
     * $sql->where("u.registered > ? AND (u.is_active = ? OR u.column IS NOT NULL)", array($registered, 1));
     *
@@ -203,9 +266,14 @@ class Database extends PDO
     {
         $args = func_get_args();
         $statement = $params = null;
+        $query_w = array();
 
         if(func_num_args() == 1 && is_array($args[0])) {
-            return $this;// todo
+            foreach ($args[0] as $k => $v) {
+                $query_w[] = "`$k` = ?";
+            }
+            $statement = implode(" AND ", $query_w);            
+            $params = array_values($args[0]);
         }else{
             $statement = array_shift($args);
 
