@@ -1,0 +1,140 @@
+#!/usr/bin/env php7
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 'on');
+ini_set('limit_memory','512M');
+date_default_timezone_set('Asia/Shanghai');
+if(0 === strpos(strtolower(PHP_OS), 'win'))
+{
+    exit("can not run on Windows operating system\n");
+}
+
+if(!extension_loaded('swoole')) 
+{
+	exit("swoole extension must be installed: https://github.com/swoole/swoole-src\n");
+}
+
+define("__MODE__", "swoole");
+define("__APP__",__DIR__);
+
+define("__ROOT__",dirname(__DIR__));
+
+define("__CONF__",__DIR__. '/conf.d');
+
+
+require (__ROOT__ . '/Ypf/Ypf.php');
+
+spl_autoload_register("\\Ypf\\Ypf::autoload");
+
+$setting = array(
+	'root' => __DIR__,
+	);
+$app = new \Ypf\Swoole($setting);
+
+//config
+$config = new \Ypf\Lib\Config();
+$config->load(__CONF__);
+
+$app->setServerConfigIni(__CONF__ . '/server.conf');
+
+$load = new \Ypf\Lib\Load(__ROOT__);
+$app->set('load', $load);
+
+//request
+$app->set('request', new \Ypf\Swoole\Request());
+
+//response
+$app->set('response', new \Ypf\Swoole\Response());
+
+$app->set('config', $config);
+
+$app->addPreAction("Cat\Common\Init\config");
+$app->addPreAction("Cat\Common\Router\index");
+
+$app->start();
+
+/*
+list($listen_addr, $listen_port) = explode(":", $config->get("server.listen"), 2);
+/* embed http server ab -n 10000 -c 200 http://localhost/ 5300 req
+
+$http = new \swoole_http_server($listen_addr, $listen_port);
+
+$http->on('request', function ($request, $response) {
+    print_r($app);
+    //ob_start();
+    $response->end("<h1>Hello Swoole. #".rand(1000, 9999)."</h1>");
+});
+$http->set(array(
+	'task_worker_num' => $config->get("server.task_worker_num"),
+	'worker_num' => $config->get("server.worker_num"),
+    'backlog' => 128,        //listen backlog
+    //'open_cpu_affinity' => 1,
+    'daemonize'        => 0,
+    'open_tcp_nodelay' => 1,
+    'task_max_request' => 10000,    //当task进程处理请求超过此值则关闭task进程
+    'dispatch_mode' => 0, //抢占模式
+    //'log_file' => '/tmp/swoole.log',	
+));
+$http->on("Start", function($h){
+	\swoole_set_process_name("ypfcgi:master");
+
+});
+
+$http->on("Task", "\Ypf\Swoole\Task::task");
+$http->on("Finish", "\Ypf\Swoole\Task::finish");
+
+$http->on("ManagerStart", function($http) {
+	\swoole_set_process_name("ypfcgi:task_manager");
+});
+
+$http->on("ShutDown", function(){ echo "shutdown now";});
+$http->on('WorkerStart', function ($http, $worker_id){
+	if($worker_id >= $http->setting['worker_num']) {
+		\swoole_set_process_name("ypfcgi:task_worker $worker_id");
+	}else{
+		\swoole_set_process_name("ypfcgi:task_master $worker_id");
+	}
+});
+
+$http->on("WorkerStop",function() {  
+	echo 'worker stop';
+});
+
+$http->start();
+
+$serv = new \swoole_server($listen_addr, $listen_port,  SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+
+$serv->set(array(
+	'task_worker_num' => $config->get("server.task_worker_num"),
+	'worker_num' => $config->get("server.worker_num"),
+    'backlog' => 128,        //listen backlog
+    //'open_cpu_affinity' => 1,
+    //'open_tcp_nodelay' => 1,
+    //'log_file' => '/tmp/swoole.log',	
+));
+
+$serv->on("Task", "\Ypf\Swoole\Task::task");
+$serv->on("Finish", "\Ypf\Swoole\Task::finish");
+
+$serv->on("Receive",function() {    try    { }catch(Exception $e){ }});
+
+$serv->on("ManagerStart", function($serv) {
+	\swoole_set_process_name("ypfcgi:task_manager");
+});
+
+$serv->on('WorkerStart', function ($serv, $worker_id){
+	if($worker_id >= $serv->setting['worker_num']) {
+		\swoole_set_process_name("ypfcgi:task_worker $worker_id");
+	}else{
+		\swoole_set_process_name("ypfcgi:task_master $worker_id");
+	}
+});
+
+swoole_set_process_name('ypfcgi:master with-config:' . __CONF__);
+
+//\swoole_process::daemon(true, true);
+
+$serv->start();
+*/
+?>
+

@@ -6,15 +6,20 @@ class Response {
 	private $headers = array();
 	private $level = 0;
 	private $output;
+	private $response;
 
-	public function addHeader($header) {
-		$this->headers[] = $header;
+	public function addHeader($header_key, $header_value) {
+		$this->headers[] = [$header_key, $header_value];
 	}
 
+	public function init(\swoole_http_response $response) {
+		$this->response = $response;
+	}
+	
 	public function redirect($url, $status = 302) {
-		header('Status: ' . $status);
-		header('Location: ' . str_replace(array('&amp;', "\n", "\r"), array('&', '', ''), $url));
-		exit();
+		$this->response->status($status);
+		$this->response->header("Location", str_replace(array('&amp;', "\n", "\r"), array('&', '', ''), $url));
+		$this->response->end();
 	}
 
 	public function setCompression($level) {
@@ -62,18 +67,13 @@ class Response {
 	public function output() {
 		if ($this->output) {
 			if ($this->level) {
-				$output = $this->compress($this->output, $this->level);
-			} else {
-				$output = $this->output;
+				$this->response->gzip($this->level);
 			}
-
-			if (!headers_sent()) {
-				foreach ($this->headers as $header) {
-					header($header, true);
-				}
+			
+			foreach ($this->headers as $header) {
+				$this->response->header($header[0], $header[1]);
 			}
-
-			echo $output;
+			$this->response->end($this->output);
 		}
 	}
 }

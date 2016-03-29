@@ -76,7 +76,7 @@ REGEX;
             }
             
         }
-
+        
 		if (isset($this->request->get['route'])) {
 			return $this->action($this->request->get['route']);
 		}
@@ -103,6 +103,7 @@ REGEX;
     
     private function getUri() {
         $uri = '';
+        $_SERVER = array_change_key_case($this->request->server, CASE_UPPER);
         if(!empty($_SERVER['PATH_INFO'])) {
             $uri = $_SERVER['PATH_INFO'];
         }elseif(isset($_SERVER['REQUEST_URI'])) {
