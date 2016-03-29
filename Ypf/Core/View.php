@@ -6,6 +6,7 @@ abstract class View
 {
 	private $template_dir = array();	
 	private $data = array();
+	private $cache = array();
 	private $output;
 
 
@@ -35,21 +36,23 @@ abstract class View
 		*/
 		foreach ($this->template_dir as $key => $dir) {
 			$template_file = $dir . $template;
+			if(!isset($this->cache[$template_file]))
 			if(!is_file($template_file)) {
-					trigger_error('Error: Could not load template ' . $template_file . '!');
+				trigger_error('Error: Could not load template ' . $template_file . '!');
 			}else{
-				extract($this->data);
-				ob_start();
-				require($template_file);
-				$this->output = ob_get_contents();
-				ob_end_clean();
-				if ($display) {
-					echo $this->output;
-				} else {
-					return $this->output;
-				}
-				
+				$this->cache[$template_file] = file_get_contents($template_file);
 			}
+			extract($this->data);
+			ob_start();
+			eval("?>".$this->cache[$template_file]."<?php ");
+			$this->output = ob_get_contents();
+			ob_end_clean();
+			if ($display) {
+				echo $this->output;
+			} else {
+				return $this->output;
+			}
+
 		}
 	}
 

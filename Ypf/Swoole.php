@@ -66,6 +66,7 @@ class Swoole extends Ypf {
         $this->response->init($response);
         $this->disPatch();
         $this->response->output();
+        //$response->end("<h1>Hello Swoole. #".rand(1000, 9999)."</h1>");
     }
     
 }

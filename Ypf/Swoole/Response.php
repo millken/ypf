@@ -6,7 +6,7 @@ class Response {
 	private $headers = array();
 	private $level = 0;
 	private $output;
-	private $response;
+	public $response;
 
 	public function addHeader($header_key, $header_value) {
 		$this->headers[] = [$header_key, $header_value];

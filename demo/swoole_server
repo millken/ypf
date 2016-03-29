@@ -48,7 +48,7 @@ $app->set('response', new \Ypf\Swoole\Response());
 
 $app->set('config', $config);
 
-$app->addPreAction("Cat\Common\Init\config");
+//$app->addPreAction("Cat\Common\Init\config");
 $app->addPreAction("Cat\Common\Router\index");
 
 $app->start();
