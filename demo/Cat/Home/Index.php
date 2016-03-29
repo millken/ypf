@@ -21,7 +21,7 @@ class Index extends \Cat\Controller {
 	}
 
 	public function viewtest1() {
-		//$this->response->addHeader("Server", "Swoole-Ypf");
+		$this->response->addHeader("Server", "Swoole-Ypf");
 		$this->response->setCompression(9);
 		$view = new \Cat\View($this);
 		$view->setResponse($this->response);
