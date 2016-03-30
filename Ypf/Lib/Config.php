@@ -62,7 +62,7 @@ class Config
         return self::$instances;
     }
     
-    public function set($uri, $data)
+    public static function set($uri, $data)
     {
 	  $levels = explode('.', $uri);
 
@@ -81,7 +81,7 @@ class Config
      * @param string $uri
      * @return mixed
      */
-    public function get($uri)
+    public static function get($uri)
     {
         $node = self::$config;
         $paths = explode('.', $uri);

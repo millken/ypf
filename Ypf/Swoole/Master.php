@@ -1,5 +1,5 @@
 <?php
-namespace Ypf\Cli;
+namespace Ypf\Swoole;
 /**
  * 
  * 配置
@@ -8,7 +8,7 @@ namespace Ypf\Cli;
 class Master
 {
     
-    const NAME = 'ypfjobber';
+    const NAME = 'ypfworker';
     
     protected static $_statusInfo = array();
     protected static $_masterPid = 0;
@@ -23,62 +23,23 @@ class Master
      public static function run() {
 
         // 设置进程名称，如果支持的话
-        self::setProcessTitle(self::NAME.':master with-config:' . self::$_configPath);
+        swoole_set_process_name(self::NAME.':master with-config:' . self::$_configPath);
+
         // 变成守护进程
-        self::daemonize();
-        // 安装信号
-        self::installSignal();
-        
+        \swoole_process::daemon(true, true);
+                
         // 保存进程pid
-        self::savePid();
+        //self::savePid();
         
         // 创建worker进程
         self::createWorkers();
-    
+            
         // 监测worker
-        self::monitorWorkers();        
+        //self::monitorWorkers();        
     }
     
-
-    /**
-     * 安装相关信号控制器
-     * @return void
-     */
-    protected static function installSignal()
-    {
-        //stop
-        pcntl_signal(SIGINT,  array('\Ypf\Cli\Master', 'signalHandler'), false);
-        //status
-        pcntl_signal(SIGUSR2, array('\Ypf\Cli\Master', 'signalHandler'), false);
-        //reload
-        pcntl_signal(SIGHUP, array('\Ypf\Cli\Master', 'signalHandler'), false);
-        pcntl_signal(SIGPIPE, SIG_IGN, false);
-    
-    }
-    
-    
-    /**
-     * 设置server信号处理函数
-     * @param null $null
-     * @param int $signal
-     * @return void
-     */
-    public static function signalHandler($signal)
-    {
-        switch($signal)
-        {
-            // 停止server信号
-            case SIGINT:
-            	self::stopAll();
-                break;
-            // 测试用
-            case SIGUSR1:
-                break;
-            // 平滑重启server信号
-            case SIGHUP:
-                echo("Server reloading\n");
-                break;
-        }
+    public static function setServ($serv) {
+    	self::$_serv = $serv;
     }
     
     public static function setConfigPath($config_path)
@@ -121,49 +82,6 @@ class Master
         chmod(YPF_PID_FILE, 0644);
     }
     
-    /**
-     * 使之脱离终端，变为守护进程
-     * @return void
-     */
-    protected static function daemonize()
-    {
-        // 设置umask
-        umask(0);
-        // fork一次
-        $pid = pcntl_fork();
-        if(-1 == $pid)
-        {
-            // 出错退出
-            exit("Daemonize fail ,can not fork");
-        }
-        elseif($pid > 0)
-        {
-            // 父进程，退出
-            exit(0);
-        }
-        // 子进程使之成为session leader
-        if(-1 == posix_setsid())
-        {
-            // 出错退出
-            exit("Daemonize fail ,setsid fail");
-        }
-    
-        // 再fork一次
-        $pid2 = pcntl_fork();
-        if(-1 == $pid2)
-        {
-            // 出错退出
-            exit("Daemonize fail ,can not fork");
-        }
-        elseif(0 !== $pid2)
-        {
-            // 结束第一子进程，用来禁止进程重新打开控制终端
-            exit(0);
-        }
-    
-        // 记录server启动时间
-        self::$_statusInfo['start_time'] = time();
-    }
     
     /**
      * 根据配置文件创建Workers
@@ -172,11 +90,20 @@ class Master
     protected static function createWorkers()
     {
         // 循环读取配置创建一定量的worker进程
-        foreach (\Ypf\Lib\Config::getAll() as $worker_name=>$config)
+        $configall = \Ypf\Lib\Config::getAll();
+        //swoole_timer_after(2000, "\Ypf\Swoole\Master::forkWorkers");
+        $configall['swoole']['serv']->start();
+
+    }
+    
+    public static function forkWorkers()
+    {
+	    $configall = \Ypf\Lib\Config::getAll();
+        foreach ($configall as $worker_name=>$config)
         {
-        	if(!$config['status']) continue;
+        	if($worker_name == 'swoole' || !$config['status']) continue;
             self::forkOneWorker($worker_name, $config);
-        }
+        }	    
     }
     
     /**
@@ -186,8 +113,20 @@ class Master
      */
     protected static function forkOneWorker($worker_name, $config)
     {
-        $pid = pcntl_fork();
-        
+        $process = new \swoole_process(function(\swoole_process $worker){
+        	$recv = $worker->pop();
+        	$worker_config = unserialize($recv);
+        	extract($worker_config);
+
+    		//echo "From Master: ".print_r($worker_config, true)."\n";
+    		//sleep(2);
+   			//$worker->exit(0);
+	        \swoole_set_process_name(self::NAME.":single worker $worker_name");
+        	\Ypf\Ypf::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+        }, false, false);
+        $process->useQueue();
+        $pid = $process->start();
+        $process->push(serialize(array('pid' => $pid, 'worker_name' => $worker_name, 'config' => $config)));
         
         // 父进程
         if($pid > 0)
@@ -195,20 +134,11 @@ class Master
             self::$_workpids[$pid] = $worker_name;
             echo("starting worker : $worker_name        [ OK ]\n");
         }
-        // 子进程
-        elseif($pid === 0)
-        {
-            self::$_workpids = array();
-            // 尝试设置子进程进程名称
-            self::setWorkerProcessTitle($worker_name);
-            \Ypf\Ypf::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
-            exit(250);
-        }
-        // 出错
         else
         {
-            echo("starting worker : $worker_name        [ FAIL ] \n");
+            echo("starting worker : $worker_name        [ FAIL ]  '"  . swoole_strerror( swoole_errno()) . "' \n");
         }
+        return $pid;
     }
     
     public static function getStatus()
@@ -225,41 +155,12 @@ class Master
         return self::$_masterPid;
     }
     
-    /**
-     * 设置子进程进程名称
-     * @param string $worker_name
-     * @return void
-     */
-    public static function setWorkerProcessTitle($worker_name)
-    {
-       self::setProcessTitle(self::NAME.":worker $worker_name");
-    }
-    
-    /**
-     * 设置进程名称，需要proctitle支持 或者php>=5.5
-     * @param string $title
-     * @return void
-     */
-    protected static function setProcessTitle($title)
-    {
-        // >=php 5.5
-        if (version_compare(phpversion(), "5.5", "ge") && function_exists('cli_set_process_title'))
-        {
-            cli_set_process_title($title);
-        }
-        // 需要扩展
-        elseif(extension_loaded('proctitle') && function_exists('setproctitle'))
-        {
-            setproctitle($title);
-        }
-    }
 
     protected static function monitorWorkers() {
         while(1) {
-            // 如果有信号到来，尝试触发信号处理函数
-            pcntl_signal_dispatch();
-            // 挂起进程，直到有子进程退出或者被信号打断
-            $pid = pcntl_wait($status, WUNTRACED);
+            $result = \swoole_process::wait();
+            extract($result);
+            //$result = array('code' => 0, 'pid' => 15001, 'signal' => 15);
             // 有子进程退出
             if($pid > 0 && self::$_masterPid)
             {

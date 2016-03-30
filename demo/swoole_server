@@ -1,0 +1,56 @@
+#!/usr/bin/env php7
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 'on');
+ini_set('limit_memory','512M');
+date_default_timezone_set('Asia/Shanghai');
+if(!extension_loaded('swoole')) 
+{
+	exit("swoole extension must be installed: https://github.com/swoole/swoole-src\n");
+}
+
+define("__MODE__", "swoole");
+define("__APP__",__DIR__);
+
+define("__ROOT__",dirname(__DIR__));
+
+define("__CONF__",__DIR__. '/conf.d');
+
+
+require (__ROOT__ . '/Ypf/Ypf.php');
+
+spl_autoload_register("\\Ypf\\Ypf::autoload");
+
+$setting = array(
+	'root' => __DIR__,
+	);
+$app = new \Ypf\Swoole($setting);
+
+//config
+$config = new \Ypf\Lib\Config();
+$config->load(__CONF__);
+
+$app->setServerConfigIni(__CONF__ . '/server.conf');
+
+$load = new \Ypf\Lib\Load(__ROOT__);
+$app->set('load', $load);
+
+//request
+$app->set('request', new \Ypf\Swoole\Request());
+
+//response
+$app->set('response', new \Ypf\Swoole\Response());
+
+//view
+$view = new \Cat\View(); 
+$view->setTemplateDir(__APP__ . '/CatView/');
+$app->set('view', $view);
+
+$app->set('config', $config);
+
+//$app->addPreAction("Cat\Common\Init\config");
+$app->addPreAction("Cat\Common\Router\index");
+
+$app->start();
+
+

@@ -8,10 +8,14 @@ if(0 === strpos(strtolower(PHP_OS), 'win'))
 {
     exit("can not run on Windows operating system\n");
 }
+if(!extension_loaded('swoole')) 
+{
+	exit("swoole extension must be installed: https://github.com/swoole/swoole-src\n");
+}
 
 if(empty($argv[1]))
 {
-    echo "Usage: ypfjobber {start|stop|restart|reload|kill|status}".PHP_EOL;
+    echo "Usage: cli_worker {start|stop|restart|reload|kill|status}".PHP_EOL;
     exit;
 }
 
@@ -21,7 +25,6 @@ define("__ROOT__",dirname(__DIR__));
 
 define("__CONF__",__ROOT__. '/conf.d/cli');
 
-define('YPF_PID_FILE',  '/var/run/ypf.pid');
 
 require (__ROOT__ . '/Ypf/Ypf.php');
 
@@ -42,8 +45,31 @@ $app->set('load', $load);
 
 $app->set('config', $config);
 
-\Ypf\Cli\Master::setConfigPath(__CONF__);
+$serv = new \swoole_server("/var/run/ypf.sock", 0, SWOOLE_PROCESS, SWOOLE_UNIX_STREAM);
+//$serv = new \swoole_server("127.0.0.1", 1001,  SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+$serv->set(array(
+	'task_worker_num' => 8, //task num
+	'worker_num' => 1,    //worker num
+));    	
 
+$serv->on("Receive",function() {    try    { }catch(Exception $e){ }});
+$serv->on("Task", "\Ypf\Swoole\Task::task");
+$serv->on("Finish", "\Ypf\Swoole\Task::finish");
+$serv->on('WorkerStart', function ($serv, $worker_id){
+	if($worker_id >= $serv->setting['worker_num']) {
+		\swoole_set_process_name("ypfworker:task_worker $worker_id");
+	}else{
+		if(!$worker_id) {
+			\Ypf\Swoole\Master::forkWorkers();		
+		}
+		\swoole_set_process_name("ypfworker:task_master $worker_id");
+	}
+});
+$serv->on("ManagerStart", function($serv) {
+	\swoole_set_process_name("ypfworker:task_manager");
+});
+$config->set('swoole.serv', $serv);
+\Ypf\Swoole\Master::setConfigPath(__CONF__);
 switch($cmd)
 {
     case 'start':
@@ -75,7 +101,7 @@ switch($cmd)
 function force_kill()
 {
     $ret = $match = array();
-    exec("ps aux | grep -E '".\Ypf\Cli\Master::NAME."' | grep -v grep", $ret);
+    exec("ps aux | grep -E '".\Ypf\Swoole\Master::NAME."' | grep -v grep", $ret);
     $this_pid = posix_getpid();
     $this_ppid = posix_getppid();
     foreach($ret as $line)
@@ -89,7 +115,6 @@ function force_kill()
             }
         }
     }
-    if(is_file(YPF_PID_FILE)) unlink(YPF_PID_FILE);
 }
 
 function job_sig($sig)
@@ -104,15 +129,8 @@ function job_sig($sig)
 
 function job_run()
 {
-	if(is_file(YPF_PID_FILE)) exit("server is running!\n");
 	
-	\Ypf\Cli\Master::run();
-}
-
-function job_stop()
-{
-	job_sig(SIGINT);
-    if(is_file(YPF_PID_FILE)) unlink(YPF_PID_FILE);
+	\Ypf\Swoole\Master::run();
 }
 
 

@@ -21,10 +21,14 @@ class Index extends \Cat\Controller {
 	}
 
 	public function viewtest1() {
-		$view = new \Cat\View($this);
-		$view->setTemplateDir(__APP__ . '/CatView/');
-		$view->assign('username', 'tester');
-		$view->assign('header', $this->action("\Cat\Common\Header\index"));
-		$view->display("index.tpl");
+		$this->response->addHeader("Server", "Swoole-Ypf");
+		//$this->response->setCompression(9);
+		$this->view->setResponse($this->response);
+		$this->view->setTemplateDir(__APP__ . '/CatView/');
+		$this->view->assign('username', 'tester');
+		$this->view->assign('header', $this->action("\Cat\Common\Header\index"));
+		$this->view->display("index.tpl");
+		//$this->response->response->header("Server", "Swoole-Ypf");
+		//$this->response->response->end("xx");
 	}
 }
