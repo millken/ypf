@@ -6,7 +6,7 @@ abstract class View
 {
 	private $template_dir = array();	
 	private $data = array();
-	private $cache = array();
+	static $cache = array();
 	private $output;
 
 
@@ -31,20 +31,17 @@ abstract class View
 	 */
 	public function fetch($template, $display = false)
 	{
-		/*
-		$output .= preg_replace('/(<%|%>|<\?php|<\?|\?>)/', "<?php echo '\$1'; ?>\n", $curr_split);
-		*/
 		foreach ($this->template_dir as $key => $dir) {
 			$template_file = $dir . $template;
-			if(!isset($this->cache[$template_file]))
+			if(!isset(self::$cache[$template_file]))
 			if(!is_file($template_file)) {
 				trigger_error('Error: Could not load template ' . $template_file . '!');
 			}else{
-				$this->cache[$template_file] = file_get_contents($template_file);
+				self::$cache[$template_file] = file_get_contents($template_file);
 			}
 			extract($this->data);
 			ob_start();
-			eval("?>".$this->cache[$template_file]."<?php ");
+			eval("?>".self::$cache[$template_file]."<?php ");
 			$this->output = ob_get_contents();
 			ob_end_clean();
 			if ($display) {

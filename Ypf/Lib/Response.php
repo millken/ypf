@@ -1,14 +1,14 @@
 <?php
 
-namespace Ypf\Swoole;
+namespace Ypf\Lib;
 
 class Response {
 	private $headers = array();
 	private $level = 0;
 	private $output;
 
-	public function addHeader($header) {
-		$this->headers[] = $header;
+	public function addHeader($header_key, $header_value) {
+		$this->headers[] = array($header_key, $header_value);
 	}
 
 	public function redirect($url, $status = 302) {
@@ -69,6 +69,7 @@ class Response {
 
 			if (!headers_sent()) {
 				foreach ($this->headers as $header) {
+					$header = implode(": ", $header);
 					header($header, true);
 				}
 			}

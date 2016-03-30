@@ -5,7 +5,7 @@ namespace Ypf\Swoole;
 class Response {
 	private $headers = array();
 	private $level = 0;
-	private $output;
+	private $output = '';
 	public $response;
 
 	public function addHeader($header_key, $header_value) {
@@ -45,5 +45,8 @@ class Response {
 			}
 			$this->response->end($this->output);
 		}
+		$this->headers = [];
+		$this->output = '';
+		$this->level = 0;
 	}
 }
