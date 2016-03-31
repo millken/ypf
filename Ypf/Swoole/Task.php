@@ -27,7 +27,7 @@ class Task
     		'thread' => $thread,
     		);
     	//call_user_func(array($config["swoole"]["serv"], 'task'), serialize($data));
-        $config["swoole"]["serv"]->task(serialize($data));
+        $config["swoole"]["serv"]->sendMessage(serialize($data), 0);
     }
     
     public static function set($key, $data) {

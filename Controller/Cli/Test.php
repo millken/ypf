@@ -42,14 +42,12 @@ class Test extends \Controller\Cli\Common {
 	
 	public function asynctest() {
 		while( 1 ) {
-		echo "start async\n";
 		$t = microtime(true);
-		$this->index2();
+		//$this->index2();
 		$r = \Ypf\Swoole\Task::thread($this->urls, array("\Controller\Cli\Test", 'curl_get'));
 		//print_r($r);
 		$tt = number_format((microtime(true)-$t),4).'s';
-		$this->log->Info("asyntest curl 5url time: " . $tt);		
-		echo "end async\n";
+		$this->log->Info("async test curl 5 url time: " . $tt);
 		sleep(5);
 		}		
 	}

@@ -8,7 +8,7 @@ namespace Ypf\Swoole;
 class Master
 {
     
-    const NAME = 'ypfworker';
+    const NAME = 'cli_worker';
     
     protected static $_statusInfo = array();
     protected static $_masterPid = 0;
@@ -121,7 +121,7 @@ class Master
     		//echo "From Master: ".print_r($worker_config, true)."\n";
     		//sleep(2);
    			//$worker->exit(0);
-	        \swoole_set_process_name(self::NAME.":single worker $worker_name");
+	        \swoole_set_process_name(self::NAME.":worker[$worker_name]");
         	\Ypf\Ypf::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
         }, false, false);
         $process->useQueue();

@@ -27,14 +27,14 @@ class Swoole extends Ypf {
 		list($addr, $port) = explode(":", $listen, 2);
 		$this->server = new \swoole_http_server($addr, $port, SWOOLE_BASE, SWOOLE_SOCK_TCP);
 		isset($this->serverConfig['swoole']) && $this->server->set($this->serverConfig['swoole']);
-		$this->server->on('Task', "\Ypf\Swoole\Task::task");
-		$this->server->on('Finish', "\Ypf\Swoole\Task::finish");
-        $this->server->on('Start', array($this, 'onStart'));
-        $this->server->on('ManagerStart', array($this, 'onManagerStart'));
-        $this->server->on('WorkerStart', array($this, 'onWorkerStart'));
-        $this->server->on('WorkerStop', array($this, 'onWorkerStop'));
-        $this->server->on('Request', array($this, 'onRequest'));
-        $this->server->on('ShutDown', array($this, 'onShutDown'));
+		$this->server->on('Task', [$this, 'onTask']);
+		$this->server->on('Finish', [$this, 'onFinish']);
+        $this->server->on('Start', [$this, 'onStart']);
+        $this->server->on('ManagerStart', [$this, 'onManagerStart']);
+        $this->server->on('WorkerStart', [$this, 'onWorkerStart']);
+        $this->server->on('WorkerStop', [$this, 'onWorkerStop']);
+        $this->server->on('Request', [$this, 'onRequest']);
+        $this->server->on('ShutDown', [$this, 'onShutDown']);
         $this->server->start();	
 	}
 	
@@ -66,6 +66,17 @@ class Swoole extends Ypf {
         return true;
     }
 
+	public function onTask(\swoole_http_server $server, $task_id, $from_id, $data) {
+		echo sprintf("pid=%d, task_id=%d, from_id=%d, data=%s\n", getmypid(), $task_id, $from_id, $data);
+		$data = unserialize($data);
+		$result = call_user_func_array($data["func"], $data["args"]);
+		$results = array('callback' => $data['callback'], 'result' => $result, 'thread' => $data['thread']);
+		//$serv->finish(serialize($results));
+	}
+
+	public function onFinish(\swoole_http_server $server, $task_id, $data) {
+	}
+	
     public function onWorkerStop(\swoole_http_server $server, $workerId) {
         return true;
     }
