@@ -4,10 +4,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 ini_set('limit_memory','512M');
 date_default_timezone_set('Asia/Shanghai');
-if(!extension_loaded('swoole')) 
-{
-	exit("swoole extension must be installed: https://github.com/swoole/swoole-src\n");
-}
 
 define("__MODE__", "swoole");
 define("__APP__",__DIR__);

@@ -11,6 +11,8 @@ class Swoole extends Ypf {
 
 	public $server;
 	private $cache;
+	private $worker_pid;
+	private $pidFile;
 		
 	public function setServerConfigIni($serverConfigIni) {
         if (!is_file($serverConfigIni)) {
@@ -21,6 +23,9 @@ class Swoole extends Ypf {
             trigger_error('Server Config Content Empty!', E_USER_ERROR);
         }
         $this->serverConfig = $serverConfig;
+		$this->pidFile = isset($this->serverConfig['server']['pid_file']) ? 
+    	$this->serverConfig['server']['pid_file'] : '/tmp/ypf.pid';        
+        \Ypf\Swoole\Cmd::start($serverConfig);
     }
 
 	public function setWorkerConfigPath($path) {
@@ -53,6 +58,7 @@ class Swoole extends Ypf {
 		$this->server->on('Finish', [$this, 'onFinish']);
         $this->server->on('Start', [$this, 'onStart']);
         $this->server->on('ManagerStart', [$this, 'onManagerStart']);
+        $this->server->on('ManagerStop', [$this, 'onManagerStop']);
         $this->server->on('WorkerStart', [$this, 'onWorkerStart']);
         $this->server->on('WorkerStop', [$this, 'onWorkerStop']);
         $this->server->on('Request', [$this, 'onRequest']);
@@ -66,11 +72,12 @@ class Swoole extends Ypf {
 		foreach($this->workerConfig as $worker_name => $config) {
 			$this->spawnCustomWorker($worker_name, $config);
 		}
+		$this->cache->set('worker_pid', $this->worker_pid);
 	}
 
 	private function spawnCustomWorker($worker_name, $config) {
 		$process = new \swoole_process(function(\swoole_process $worker){
-        	$recv = $worker->pop();
+	       	$recv = $worker->pop();
         	$worker_config = unserialize($recv);
         	extract($worker_config);
 
@@ -82,6 +89,7 @@ class Swoole extends Ypf {
         }, false, false);
         $process->useQueue();
         $pid = $process->start();
+        $this->worker_pid[] = $pid;
         $process->push(serialize(array('pid' => $pid, 'worker_name' => $worker_name, 'config' => $config)));
         
         if($pid > 0) {
@@ -95,6 +103,7 @@ class Swoole extends Ypf {
     	$name = isset($this->serverConfig['server']['master_process_name']) ? 
     	$this->serverConfig['server']['master_process_name'] : 'ypf:swoole-master';
         \swoole_set_process_name($name);
+        file_put_contents($this->pidFile, $server->master_pid);
         return true;
     }
 
@@ -104,6 +113,11 @@ class Swoole extends Ypf {
         \swoole_set_process_name($name);
         return true;
     }
+
+    public function onManagerStop(\swoole_http_server $server) {
+
+        return true;
+    }    
 
     public function onWorkerStart(\swoole_http_server $server, $worker_id) {
 		if($worker_id >= $server->setting['worker_num']) {
@@ -148,11 +162,17 @@ class Swoole extends Ypf {
 		}	
 	}
 	
-    public function onWorkerStop(\swoole_http_server $server, $workerId) {
-        return true;
+    public function onWorkerStop(\swoole_http_server $server, $worker_id) {
+	    return true;
     }
 
     public function onShutDown(\swoole_http_server $server) {
+    	$this->worker_pid = $this->cache->get('worker_pid');
+    	foreach($this->worker_pid as $pid) {
+    		\swoole_process::kill($pid, 9);
+    	}
+    	$this->cache->del('worker_pid');
+    	@unlink($this->pidFile);
         return true;
     }
 
