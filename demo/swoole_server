@@ -1,4 +1,4 @@
-#!/usr/bin/env php7
+#!/usr/bin/env php
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 'on');
@@ -32,8 +32,19 @@ $config->load(__CONF__);
 
 $app->setServerConfigIni(__CONF__ . '/server.conf');
 
+$app->setWorkerConfigPath(__CONF__ . '/worker/');
+
 $load = new \Ypf\Lib\Load(__ROOT__);
 $app->set('load', $load);
+
+//cache 
+$cache = new \Ypf\Swoole\Cache(1024);
+$app->set('cache', $cache);
+$app->setCache($cache);
+
+//thread
+$thread = new \Ypf\Swoole\Thread($cache);
+$app->set('thread', $thread);
 
 //request
 $app->set('request', new \Ypf\Swoole\Request());

@@ -1,7 +1,7 @@
 <?php
-namespace Controller\Cli;
+namespace Cat\Cli;
 
-class Test extends \Controller\Cli\Common {
+class Test extends \Cat\Controller {
 	private $log;
 	private $urls = array(
 			'http://www.google.com/',
@@ -9,8 +9,7 @@ class Test extends \Controller\Cli\Common {
 			'http://www.v2ex.com/',
 			'http://www.yahoo.com/',
 			'http://www.qq.com/',
-			'http://www.twitter.com',
-			'http://www.yundun.cn',			
+			'http://www.twitter.com',		
 		);
 	public function __construct() {
 		//log
@@ -27,7 +26,7 @@ class Test extends \Controller\Cli\Common {
 	}
     
 	public function index2(){
-		\Ypf\Swoole\Task::add(array("\Controller\Cli\Test", 't_1') , array(), array("\Controller\Cli\Test", 'r_1'));
+		\Ypf\Swoole\Task::add(array("\Cat\Cli\Test", 't_1') , array(), array("\Cat\Cli\Test", 'r_1'));
 	}
 	
 	public static function t_1 ($args = array()) {
@@ -44,8 +43,8 @@ class Test extends \Controller\Cli\Common {
 		while( 1 ) {
 		$t = microtime(true);
 		//$this->index2();
-		$r = \Ypf\Swoole\Task::thread($this->urls, array("\Controller\Cli\Test", 'curl_get'));
-		//print_r($r);
+		$r = $this->thread->block(array("\Cat\Cli\Test", 'curl_get'), $this->urls);
+		print_r($r);
 		$tt = number_format((microtime(true)-$t),4).'s';
 		$this->log->Info("async test curl 5 url time: " . $tt);
 		sleep(5);
@@ -69,15 +68,15 @@ class Test extends \Controller\Cli\Common {
 	}
 	
 	public static function curl_get($url) {
-		
 		$ch = \curl_init();
 		//echo ($url);
 		\curl_setopt($ch, CURLOPT_TIMEOUT, 5); //5秒超时
         \curl_setopt($ch, CURLOPT_URL, $url);
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         \curl_setopt($ch, CURLOPT_HEADER,0);
-        $result = curl_exec($ch);
-		curl_close($ch);
+        $result = \curl_exec($ch);
+		\curl_close($ch);
+		$result = "res get";
 		return $result;
 	}	
 }
