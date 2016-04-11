@@ -135,6 +135,7 @@ class Swoole extends Ypf {
 		if(!empty($data['thread'])) {
 			$key = $data['thread']['task'];
 			$value = $this->cache->get($key);
+			if(!$value) return;
 			$value['results'][$data['thread']['id']] = $data['result'];
 			$value['tasks'] -= 1;
 

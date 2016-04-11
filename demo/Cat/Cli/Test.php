@@ -26,7 +26,7 @@ class Test extends \Cat\Controller {
 	}
     
 	public function index2(){
-		\Ypf\Swoole\Task::add(array("\Cat\Cli\Test", 't_1') , array(), array("\Cat\Cli\Test", 'r_1'));
+		$this->thread->add(array("\Cat\Cli\Test", 't_1') , array(), array("\Cat\Cli\Test", 'r_1'));
 	}
 	
 	public static function t_1 ($args = array()) {
@@ -43,7 +43,7 @@ class Test extends \Cat\Controller {
 		while( 1 ) {
 		$t = microtime(true);
 		//$this->index2();
-		$r = $this->thread->block(array("\Cat\Cli\Test", 'curl_get'), $this->urls);
+		$r = $this->thread->block(array("\Cat\Cli\Test", 'curl_get'), $this->urls, 8000);
 		print_r($r);
 		$tt = number_format((microtime(true)-$t),4).'s';
 		$this->log->Info("async test curl 5 url time: " . $tt);

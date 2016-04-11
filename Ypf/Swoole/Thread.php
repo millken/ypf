@@ -29,12 +29,12 @@ class Thread {
     	for($i=0; $i< $data['tasks']; $i++) {
     		$this->add($func, [$args[$i]], null, ['task' => $key, 'id' => $i]);
 		}
-		\swoole_timer_after($timeout, function(){
-			$this->cache->del($key);
-		});
+		$n = 1;
 		while(isset($data['tasks']) && $data["tasks"] > 0) {
 			$result = $this->cache->get($key);
 			$data = $result ? $result : ['tasks' => 0];
+			$time = 200000 * $n++;
+			if(($timeout * 1000) < $time) break;
     		usleep(200000);
     	}
     	$result = isset($data['results'])? $data['results'] : false;
