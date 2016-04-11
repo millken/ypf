@@ -6,8 +6,8 @@ class Log {
 	private $filehandle;
 	private $record_level = 0;
 	private static $levels = array(
-			'INFO', 'WARN', 'DEBEG', 'ERROR'
-		);
+		'INFO', 'WARN', 'DEBEG', 'ERROR',
+	);
 
 	public function __construct($filename) {
 		$file = $filename;
@@ -23,8 +23,10 @@ class Log {
 	}
 
 	private function write($level, $message) {
-		if ($level >= $this->record_level)
-		fwrite($this->filehandle, date('Y-m-d G:i:s') . '- [' . self::$levels[$level] . '] - ' . print_r($message, true) . "\n");
+		if ($level >= $this->record_level) {
+			fwrite($this->filehandle, date('Y-m-d G:i:s') . '- [' . self::$levels[$level] . '] - ' . print_r($message, true) . "\n");
+		}
+
 	}
 
 	public function Error($message) {
@@ -41,6 +43,6 @@ class Log {
 
 	public function Info($message) {
 		$this->write(0, $message);
-	}	
+	}
 
 }

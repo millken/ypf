@@ -56,7 +56,7 @@ class Response {
 
 		$this->addHeader('Content-Encoding: ' . $encoding);
 
-		return gzencode($data, (int)$level);
+		return gzencode($data, (int) $level);
 	}
 
 	public function output() {

@@ -15,7 +15,7 @@ class Response {
 	public function init(\swoole_http_response $response) {
 		$this->response = $response;
 	}
-	
+
 	public function redirect($url, $status = 302) {
 		$this->response->status($status);
 		$this->response->header("Location", str_replace(array('&amp;', "\n", "\r"), array('&', '', ''), $url));
@@ -39,7 +39,7 @@ class Response {
 			if ($this->level) {
 				$this->response->gzip($this->level);
 			}
-			
+
 			foreach ($this->headers as $header) {
 				$this->response->header($header[0], $header[1]);
 			}

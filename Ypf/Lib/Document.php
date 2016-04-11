@@ -37,7 +37,7 @@ class Document {
 	public function addLink($href, $rel) {
 		$this->links[$href] = array(
 			'href' => $href,
-			'rel'  => $rel
+			'rel' => $rel,
 		);
 	}
 
@@ -47,9 +47,9 @@ class Document {
 
 	public function addStyle($href, $rel = 'stylesheet', $media = 'screen') {
 		$this->styles[$href] = array(
-			'href'  => $href,
-			'rel'   => $rel,
-			'media' => $media
+			'href' => $href,
+			'rel' => $rel,
+			'media' => $media,
 		);
 	}
 
