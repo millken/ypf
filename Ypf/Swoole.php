@@ -94,18 +94,26 @@ class Swoole extends Ypf {
 		}
 
 		foreach ($cron_queue as $worker_name => $config) {
-			$cron = \Cron\CronExpression::factory($config["crontab"]);
-			$nextRunTime = $cron->getNextRunDate()->getTimestamp();
-			$timeNs = $nextRunTime - time();
+			$crontab = \Cron\CronExpression::isValidExpression($config["crontab"]);
+			if (!$crontab) {
+				$timeNs = intval($config["crontab"]);
+			} else {
+				$cron = \Cron\CronExpression::factory($config["crontab"]);
+				$nextRunTime = $cron->getNextRunDate()->getTimestamp();
+				$timeNs = intval($nextRunTime - time());
+			}
+			if ($timeNs < 1) {
+				continue;
+			}
+
 			swoole_timer_after(1000 * $timeNs, function () use ($worker_name, $config) {
+				self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
 				$cron_queue = $this->cache->get("worker_cron_queue");
 				$cron_ready = $this->cache->get("worker_cron_ready");
 				unset($cron_ready[$worker_name]);
 				$cron_queue[$worker_name] = $config;
 				$this->cache->set("worker_cron_queue", $cron_queue);
 				$this->cache->set("worker_cron_ready", $cron_ready);
-				self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
-
 			});
 			unset($cron_queue[$worker_name]);
 			$cron_ready[$worker_name] = $config;
@@ -122,12 +130,10 @@ class Swoole extends Ypf {
 				}
 			}
 			$this->cache->set("worker_cron_queue", $config);
-			$this->cache->set("tmp", time());
 			\swoole_timer_tick(1000, [$this, 'crontabWorker']);
 			$processName = isset($this->serverConfig['server']['cron_worker_process_name']) ?
 			$this->serverConfig['server']['cron_worker_process_name'] : 'ypf:swoole-cron-worker';
 			\swoole_set_process_name($processName);
-			//self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
 		}, false, false);
 		$pid = $process->start();
 
