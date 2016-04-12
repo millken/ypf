@@ -1,6 +1,8 @@
 <?php
 namespace Ypf;
 
+use \Cron;
+
 class Swoole extends Ypf {
 
 	const VERSION = '0.0.2';
@@ -73,9 +75,68 @@ class Swoole extends Ypf {
 		}
 
 		foreach ($this->workerConfig as $worker_name => $config) {
+			if (!$config["status"] or isset($config["crontab"])) {
+				continue;
+			}
+
 			$this->spawnCustomWorker($worker_name, $config);
 		}
+		$this->spawnCrontabWorker($this->workerConfig);
 		$this->cache->set('worker_pid', $this->worker_pid);
+	}
+
+	public function crontabWorker() {
+		$cron_queue = $this->cache->get("worker_cron_queue");
+		$cron_ready = $this->cache->get("worker_cron_ready");
+
+		if (empty($cron_queue)) {
+			return;
+		}
+
+		foreach ($cron_queue as $worker_name => $config) {
+			$cron = \Cron\CronExpression::factory($config["crontab"]);
+			$nextRunTime = $cron->getNextRunDate()->getTimestamp();
+			$timeNs = $nextRunTime - time();
+			swoole_timer_after(1000 * $timeNs, function () use ($worker_name, $config) {
+				$cron_queue = $this->cache->get("worker_cron_queue");
+				$cron_ready = $this->cache->get("worker_cron_ready");
+				unset($cron_ready[$worker_name]);
+				$cron_queue[$worker_name] = $config;
+				$this->cache->set("worker_cron_queue", $cron_queue);
+				$this->cache->set("worker_cron_ready", $cron_ready);
+				self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+
+			});
+			unset($cron_queue[$worker_name]);
+			$cron_ready[$worker_name] = $config;
+		}
+		$this->cache->set("worker_cron_queue", $cron_queue);
+		$this->cache->set("worker_cron_ready", $cron_ready);
+	}
+
+	private function spawnCrontabWorker($config) {
+		$process = new \swoole_process(function (\swoole_process $worker) use ($config) {
+			foreach ($config as $k => $v) {
+				if (!$v["status"] or !isset($v["crontab"])) {
+					unset($config[$k]);
+				}
+			}
+			$this->cache->set("worker_cron_queue", $config);
+			$this->cache->set("tmp", time());
+			\swoole_timer_tick(1000, [$this, 'crontabWorker']);
+			$processName = isset($this->serverConfig['server']['cron_worker_process_name']) ?
+			$this->serverConfig['server']['cron_worker_process_name'] : 'ypf:swoole-cron-worker';
+			\swoole_set_process_name($processName);
+			//self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+		}, false, false);
+		$pid = $process->start();
+
+		$this->worker_pid[] = $pid;
+		if ($pid > 0) {
+			echo ("starting cron worker     [ OK ]\n");
+		} else {
+			echo ("starting cron worker     [ FAIL ]  '" . \swoole_strerror(swoole_errno()) . "' \n");
+		}
 	}
 
 	private function spawnCustomWorker($worker_name, $config) {
