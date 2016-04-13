@@ -8,6 +8,10 @@
     "autoload": {
         "psr-0": {"Ypf": "Ypf/"}
     },
+	"require": {
+		 "php" : ">=5.3.0",
+        "mtdowling/cron-expression": "^1.1"
+    },
     "authors"    : [
         {
             "name" : "millken",
