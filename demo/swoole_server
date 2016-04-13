@@ -13,10 +13,12 @@ define("__ROOT__",dirname(__DIR__));
 define("__CONF__",__DIR__. '/conf.d');
 
 
+require (__DIR__ .'/vendor/autoload.php');
+/*
 require (__ROOT__ . '/Ypf/Ypf.php');
 
 spl_autoload_register("\\Ypf\\Ypf::autoload");
-
+*/
 $setting = array(
 	'root' => __DIR__,
 	);

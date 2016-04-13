@@ -1,0 +1,15 @@
+{
+    "name": "millken/ypf_demo",
+    "require": {
+        "millken/ypf": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "millken",
+            "email": "millken@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require-dev": {
+    }
+}
