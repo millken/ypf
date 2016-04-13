@@ -1,5 +1,5 @@
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
-
+vendor
 conf.d
 *.log
 logs

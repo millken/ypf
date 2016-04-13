@@ -1,0 +1,18 @@
+{
+    "name"       : "millken/ypf",
+    "description": "PHP framework & Application Server.",
+    "type"       : "library",
+    "keywords"   : ["library", "webserver", "framework"],
+    "homepage"   : "https://github.com/millken/ypf/",
+    "license"    : "LGPL",
+    "autoload": {
+        "psr-0": {"Ypf": "Ypf/"}
+    },
+    "authors"    : [
+        {
+            "name" : "millken",
+            "email": "millken@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
