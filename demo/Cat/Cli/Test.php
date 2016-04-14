@@ -25,7 +25,14 @@ class Test extends \Cat\Controller {
 		}
 	}
 
+	public function test4() {
+		var_dump($this->memcache->set('t', date("Y-m-d H:i:s")));
+		echo $this->memcache->get('t') . "\n";
+		echo $this->memcache->getLastErrorCode();
+	}
+
 	public function test3() {
+		$this->test4();
 		$msg = sprintf("test 3 : %s pid= %d\n", date('Y-m-d H:i:s'), getmypid());
 		echo $msg;
 	}
