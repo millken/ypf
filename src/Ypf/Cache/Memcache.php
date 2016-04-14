@@ -22,7 +22,6 @@ class Memcache implements Ypf\Cache\Cache {
 	const DEFAULT_HOST = '127.0.0.1';
 
 	function __construct($config) {
-		print_r($config);
 		if (empty($config['use_memcached'])) {
 			$this->cache = new \Memcache;
 			$this->flags = MEMCACHE_COMPRESSED;
