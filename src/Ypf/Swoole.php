@@ -260,5 +260,4 @@ class Swoole extends Ypf {
 		$this->response->output();
 		//$response->end("<h1>Hello Swoole</h1>");
 	}
-
 }

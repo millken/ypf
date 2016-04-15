@@ -81,18 +81,23 @@ class Ypf {
 		return $this;
 	}
 
-	public function execute($action, $args = array()) {
+	public function execute($action, array $args) {
+		static $cache = [];
 		if (is_array($action)) {
 			list($class_name, $method) = $action;
 		} else {
 			$pos = strrpos($action, '\\');
 			$class_name = substr($action, 0, $pos);
 			$method = substr($action, $pos + 1);
-
 		}
-		if (class_exists($class_name) && is_callable(array($class_name, $method))) {
+		if (isset($cache[$class_name])) {
+			$class = $cache[$class_name];
+			return call_user_func_array([$class, $method], $args);
+		}
+		if (class_exists($class_name) && is_callable([$class_name, $method])) {
 			$class = new $class_name();
-			return call_user_func_array(array($class, $method), $args);
+			$cache[$class_name] = $class;
+			return call_user_func_array([$class, $method], $args);
 		} else {
 			throw new Exception("Unable to load action: '$action'[$class_name->{$method}]");
 		}
