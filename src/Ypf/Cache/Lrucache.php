@@ -60,7 +60,7 @@ class Lrucache implements Ypf\Cache\Cache {
 	}
 
 	protected function isExpire($key) {
-		$expire = $this->data[$key];
+		$expire = $this->data[$key]['expire'];
 		if ($expire < 0) {
 			return false;
 		} elseif (time() >= $expire) {
