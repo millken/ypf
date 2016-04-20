@@ -49,7 +49,6 @@ class Lrucache implements Ypf\Cache\Cache {
 			'value' => $value,
 			'expire' => ($expire > 0 ? time() + $expire : $expire),
 		];
-		print_r($this->data);
 	}
 
 	protected function removeEarliestUsedKey() {
