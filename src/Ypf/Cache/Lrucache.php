@@ -37,6 +37,15 @@ class Lrucache implements Ypf\Cache\Cache {
 		return true;
 	}
 
+	function cache($key, $func, $expire = -1) {
+		$value = $this->get($key);
+		if ($value === false) {
+			$value = $func();
+			$this->set($key, $value, $expire);
+		}
+		return $value;
+	}
+
 	function set($key, $value, $expire = -1) {
 		if (isset($this->data[$key]) || array_key_exists($key, $this->data)) {
 			$this->changeKeyToLastUsed($key, $value);
