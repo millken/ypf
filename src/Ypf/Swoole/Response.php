@@ -2,11 +2,20 @@
 
 namespace Ypf\Swoole;
 
-class Response {
+final class Response {
 	private $headers = array();
 	private $level = 0;
 	private $output = '';
-	public $response;
+	protected $response;
+	protected static $instances = null;
+
+	public function __construct() {
+		self::$instances = &$this;
+	}
+
+	public static function &getInstance() {
+		return self::$instances;
+	}
 
 	public function addHeader($header_key, $header_value) {
 		$this->headers[] = [$header_key, $header_value];
