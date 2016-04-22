@@ -2,7 +2,7 @@
 
 namespace Ypf\Swoole;
 
-class Request {
+final class Request {
 	public $get = [];
 	public $post = [];
 	public $cookie = [];
