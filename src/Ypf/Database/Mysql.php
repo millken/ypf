@@ -12,6 +12,9 @@ class Mysql {
 	protected $dsn, $pdo;
 	protected $methods = array('from', 'data', 'field', 'table', 'order', 'alias', 'having', 'group', 'lock', 'distinct', 'auto');
 	public function __construct($options = []) {
+		if (!is_array($options)) {
+			throw new \InvalidArgumentException('options must be array');
+		}
 		$default_options = array(
 			'dbtype' => 'mysql',
 			'host' => '127.0.0.1',
@@ -159,7 +162,7 @@ class Mysql {
 			$placeholder = substr(str_repeat('?,', count($keys)), 0, -1);
 			$query = "INSERT INTO `" . $this->options['table'] . "`($fields) VALUES($placeholder)";
 
-			return $this->query($query, array_values($data)) ? (parent::lastInsertId() ? parent::lastInsertId() : true) : false;
+			return $this->query($query, array_values($data)) ? ($this->pdo->lastInsertId() ? $this->pdo->lastInsertId() : true) : false;
 			break;
 		case 'UPDATE':
 			$update_field = [];
