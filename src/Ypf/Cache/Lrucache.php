@@ -16,7 +16,7 @@ class Lrucache implements Ypf\Cache\Cache {
 	}
 
 	function get($key) {
-		if (!array_key_exists($key, $this->data)) {
+		if (!array_key_exists($key, $this->data) or !isset($this->data[$key]['value'])) {
 			return false;
 		}
 
