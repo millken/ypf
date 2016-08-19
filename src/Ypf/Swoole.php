@@ -5,8 +5,9 @@ use \Cron;
 
 class Swoole extends Ypf {
 
-	const VERSION = '0.0.2';
+	const VERSION = '1.0.4';
 	const LISTEN = '127.0.0.1:9002';
+	const MODE = 'base';
 
 	private $serverConfig;
 	private $workerConfig;
@@ -53,8 +54,14 @@ class Swoole extends Ypf {
 	public function start() {
 		$listen = isset($this->serverConfig["server"]["listen"]) ?
 		$this->serverConfig["server"]["listen"] : self::LISTEN;
+		$mode = isset($this->serverConfig["server"]["mode"]) ?
+		$this->serverConfig["server"]["mode"] : self::MODE;
+		switch($mode) {
+			case 'process': $swoole_mode = SWOOLE_PROCESS; break;
+			default: $swoole_mode = SWOOLE_BASE; break;
+		}
 		list($addr, $port) = explode(":", $listen, 2);
-		$this->server = new \swoole_http_server($addr, $port, SWOOLE_BASE, SWOOLE_TCP);
+		$this->server = new \swoole_http_server($addr, $port, $swoole_mode, SWOOLE_TCP);
 		if(isset($this->serverConfig["server"]["ssl_listen"])) {
 			list($ssl_addr, $ssl_port) = explode(":", $this->serverConfig["server"]["ssl_listen"], 2);
 			$this->server->addlistener($ssl_addr, $ssl_port, SWOOLE_TCP | SWOOLE_SSL);
