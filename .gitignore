@@ -4,4 +4,5 @@ Cron
 conf.d
 *.log
 logs
+.idea/*
 *.*~
