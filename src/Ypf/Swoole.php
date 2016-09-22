@@ -218,6 +218,9 @@ class Swoole extends Ypf {
 			$processName = sprintf($name, $worker_id);
 		}
 		\swoole_set_process_name($processName);
+
+		$pid = posix_getpid();
+		$this->cache->set("worker_son_{$pid}", $this->worker_pid);
 		return true;
 	}
 
@@ -250,14 +253,26 @@ class Swoole extends Ypf {
 	}
 
 	public function onWorkerStop(\swoole_http_server $server, $worker_id) {
+
+		$pid = posix_getpid();
+		$worker_son = $this->cache->get("worker_son_{$pid}");
+
+		if(is_array($worker_son) && !empty($worker_son)){
+			foreach ($worker_son as $son_pid) {
+				\swoole_process::kill($son_pid, 9);
+			}
+
+			$this->cache->del("worker_son_{$pid}");
+		}
+
 		return true;
 	}
 
 	public function onShutDown(\swoole_http_server $server) {
 		$this->worker_pid = $this->cache->get('worker_pid');
-		foreach ($this->worker_pid as $pid) {
-			\swoole_process::kill($pid, 9);
-		}
+//		foreach ($this->worker_pid as $pid) {
+//			\swoole_process::kill($pid, 9);
+//		}
 		$this->cache->del('worker_pid');
 		@unlink($this->pidFile);
 		return true;

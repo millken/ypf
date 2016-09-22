@@ -77,12 +77,13 @@ class Cmd {
 
 	public static function restart() {
 		self::stop();
+		$loop = 3;
 		while (is_file(self::$masterPidFile)) {
 			$masterPid = @file_get_contents(self::$masterPidFile);
-			if (self::$masterPid != $masterPid) {
+			if (self::$masterPid != $masterPid || $loop < 0) {
 				break;
 			}
-
+			$loop--;
 			usleep(200000);
 		}
 		echo "server restarting ..." . PHP_EOL;
