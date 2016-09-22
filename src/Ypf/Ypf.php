@@ -8,7 +8,7 @@ namespace Ypf;
 define("__YPF__", __DIR__);
 
 class Ypf {
-	const VERSION = '0.0.2';
+	const VERSION = '1.0.4';
 
 	private $container = array();
 

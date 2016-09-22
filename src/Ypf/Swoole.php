@@ -13,9 +13,9 @@ class Swoole extends Ypf {
 	private $workerConfig;
 
 	public $server;
-	private $cache;
-	private $worker_pid;
+	private $worker_pid = [];
 	private $pidFile;
+	private $shm;
 
 	public function setServerConfigIni($serverConfigIni) {
 		if (!is_file($serverConfigIni)) {
@@ -47,11 +47,8 @@ class Swoole extends Ypf {
 		return $this->server;
 	}
 
-	public function setCache(&$cache) {
-		$this->cache = $cache;
-	}
-
 	public function start() {
+		$this->shm = new \Ypf\Cache\Shm;
 		$listen = isset($this->serverConfig["server"]["listen"]) ?
 		$this->serverConfig["server"]["listen"] : self::LISTEN;
 		$mode = isset($this->serverConfig["server"]["mode"]) ?
@@ -96,12 +93,12 @@ class Swoole extends Ypf {
 			$this->spawnCustomWorker($worker_name, $config);
 		}
 		$this->spawnCrontabWorker($this->workerConfig);
-		$this->cache->set('worker_pid', $this->worker_pid);
+		$this->shm->set('worker_pid', $this->worker_pid);
 	}
 
 	public function crontabWorker() {
-		$cron_queue = $this->cache->get("worker_cron_queue");
-		$cron_ready = $this->cache->get("worker_cron_ready");
+		$cron_queue = $this->shm->get("worker_cron_queue");
+		$cron_ready = $this->shm->get("worker_cron_ready");
 
 		if (empty($cron_queue)) {
 			return;
@@ -122,18 +119,18 @@ class Swoole extends Ypf {
 
 			swoole_timer_after(1000 * $timeNs, function () use ($worker_name, $config) {
 				self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
-				$cron_queue = $this->cache->get("worker_cron_queue");
-				$cron_ready = $this->cache->get("worker_cron_ready");
+				$cron_queue = $this->shm->get("worker_cron_queue");
+				$cron_ready = $this->shm->get("worker_cron_ready");
 				unset($cron_ready[$worker_name]);
 				$cron_queue[$worker_name] = $config;
-				$this->cache->set("worker_cron_queue", $cron_queue);
-				$this->cache->set("worker_cron_ready", $cron_ready);
+				$this->shm->set("worker_cron_queue", $cron_queue);
+				$this->shm->set("worker_cron_ready", $cron_ready);
 			});
 			unset($cron_queue[$worker_name]);
 			$cron_ready[$worker_name] = $config;
 		}
-		$this->cache->set("worker_cron_queue", $cron_queue);
-		$this->cache->set("worker_cron_ready", $cron_ready);
+		$this->shm->set("worker_cron_queue", $cron_queue);
+		$this->shm->set("worker_cron_ready", $cron_ready);
 	}
 
 	private function spawnCrontabWorker($config) {
@@ -143,7 +140,7 @@ class Swoole extends Ypf {
 					unset($config[$k]);
 				}
 			}
-			$this->cache->set("worker_cron_queue", $config);
+			$this->shm->set("worker_cron_queue", $config);
 			\swoole_timer_tick(1000, [$this, 'crontabWorker']);
 			$processName = isset($this->serverConfig['server']['cron_worker_process_name']) ?
 			$this->serverConfig['server']['cron_worker_process_name'] : 'ypf:swoole-cron-worker';
@@ -219,8 +216,6 @@ class Swoole extends Ypf {
 		}
 		\swoole_set_process_name($processName);
 
-		$pid = posix_getpid();
-		$this->cache->set("worker_son_{$pid}", $this->worker_pid);
 		return true;
 	}
 
@@ -235,7 +230,7 @@ class Swoole extends Ypf {
 	public function onFinish(\swoole_http_server $server, $task_id, $data) {
 		if (!empty($data['thread'])) {
 			$key = $data['thread']['task'];
-			$value = $this->cache->get($key);
+			$value = $this->shm->get($key);
 			if (!$value) {
 				return;
 			}
@@ -243,7 +238,7 @@ class Swoole extends Ypf {
 			$value['results'][$data['thread']['id']] = $data['result'];
 			$value['tasks'] -= 1;
 
-			$this->cache->set($key, $value);
+			$this->shm->set($key, $value);
 		}
 		//echo sprintf("pid = %d fnish = %s, value = %s\n",getmypid(), print_r($data, true), print_r($value, true));
 		if ($data['callback']) {
@@ -253,28 +248,21 @@ class Swoole extends Ypf {
 	}
 
 	public function onWorkerStop(\swoole_http_server $server, $worker_id) {
-
-		$pid = posix_getpid();
-		$worker_son = $this->cache->get("worker_son_{$pid}");
-
-		if(is_array($worker_son) && !empty($worker_son)){
-			foreach ($worker_son as $son_pid) {
-				\swoole_process::kill($son_pid, 9);
-			}
-
-			$this->cache->del("worker_son_{$pid}");
+		if ($worker_id) {
+			return true;
 		}
+		$worker_pids = $this->shm->get('worker_pid');
+		foreach ($worker_pids as $worker_pid) {
+			\swoole_process::kill($worker_pid, 9);
+		}
+		$this->shm->del("worker_pid");
 
 		return true;
 	}
 
 	public function onShutDown(\swoole_http_server $server) {
-		$this->worker_pid = $this->cache->get('worker_pid');
-//		foreach ($this->worker_pid as $pid) {
-//			\swoole_process::kill($pid, 9);
-//		}
-		$this->cache->del('worker_pid');
 		@unlink($this->pidFile);
+		unset($this->shm);
 		return true;
 	}
 

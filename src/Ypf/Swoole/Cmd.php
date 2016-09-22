@@ -54,6 +54,8 @@ class Cmd {
 				self::$serverConfig['server']['worker_process_name'] : 'ypf:swoole-worker-%d'),
 			(isset(self::$serverConfig['server']['task_worker_process_name']) ?
 				self::$serverConfig['server']['task_worker_process_name'] : 'ypf:swoole-task-worker-%d'),
+			(isset(self::$serverConfig['server']['cron_worker_process_name']) ?
+				self::$serverConfig['server']['cron_worker_process_name'] : 'ypf:swoole-cron-worker'),
 		];
 		foreach ($process_lists as $i => $process_name) {
 			$process_name = str_replace("%d", "", $process_name);
@@ -77,16 +79,22 @@ class Cmd {
 
 	public static function restart() {
 		self::stop();
-		$loop = 3;
-		while (is_file(self::$masterPidFile)) {
+		$loop = 20;
+		while (file_exists(self::$masterPidFile)) {
 			$masterPid = @file_get_contents(self::$masterPidFile);
 			if (self::$masterPid != $masterPid || $loop < 0) {
 				break;
 			}
 			$loop--;
-			usleep(200000);
+			clearstatcache(true, self::$masterPidFile);
+			usleep(500000);
 		}
-		echo "server restarting ..." . PHP_EOL;
+		if (file_exists(self::$masterPidFile)) {
+			echo "failed to restart, some processes are still running ..." . PHP_EOL;
+			exit;
+		} else {
+			echo "server restarting ..." . PHP_EOL;
+		}
 	}
 
 	public static function reload() {
