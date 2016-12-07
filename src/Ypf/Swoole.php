@@ -118,7 +118,10 @@ class Swoole extends Ypf {
 			}
 
 			swoole_timer_after(1000 * $timeNs, function () use ($worker_name, $config) {
-				self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+				$a = new \Ypf\Core\Action($config['action'], array('worker_name' => $worker_name));
+				if(!$a->execute()) {
+					die ("execute : {$config['action']}        [ Fail ]\n");
+				}
 				$cron_queue = $this->shm->get("worker_cron_queue");
 				$cron_ready = $this->shm->get("worker_cron_ready");
 				unset($cron_ready[$worker_name]);
@@ -166,7 +169,10 @@ class Swoole extends Ypf {
 			$this->serverConfig['server']['worker_process_name'] : 'ypf:swoole-worker-%d';
 			$processName = sprintf("$name:%s", 0, $worker_name);
 			\swoole_set_process_name($processName);
-			self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+			$a = new \Ypf\Core\Action($config['action'], array('worker_name' => $worker_name));
+			if(!$a->execute()) {
+				die ("execute : {$config['action']}        [ Fail ]\n");
+			}
 		}, false, false);
 		$process->useQueue();
 		$pid = $process->start();

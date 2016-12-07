@@ -14,8 +14,9 @@ abstract class Controller {
 		return end($qualifiedClassParts);
 	}
 
-	protected function action($action, $args = array()) {
-		return \Ypf\Ypf::getInstance()->execute($action, $args);
+	protected function action($action, $args = array())	{
+		$a = new \Ypf\Core\Action($action, $args);
+		return $a->execute();
 	}
 
 	public function __set($name, $value) {

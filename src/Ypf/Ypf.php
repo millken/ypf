@@ -81,43 +81,41 @@ class Ypf {
 		return $this;
 	}
 
-	public function execute($action, array $args) {
-		static $cache = [];
-		if (is_array($action)) {
-			list($class_name, $method) = $action;
-		} else {
-			$pos = strrpos($action, '\\');
-			$class_name = substr($action, 0, $pos);
-			$method = substr($action, $pos + 1);
-		}
-		if (isset($cache[$class_name])) {
-			$class = $cache[$class_name];
-			return call_user_func_array([$class, $method], $args);
-		}
-		if (class_exists($class_name) && is_callable([$class_name, $method])) {
-			$class = new $class_name();
-			$cache[$class_name] = $class;
-			return call_user_func_array([$class, $method], $args);
-		} else {
-			throw new Exception("Unable to load action: '$action'[$class_name->{$method}]");
-		}
-	}
+	private function execute($action) {
+		$result = $action->execute();
 
-	public function disPatch($action = '', $args = array()) {
-		foreach ($this->pre_action as $pre) {
-			$result = $this->execute($pre['action'], $pre['args']);
+		if (is_object($result)) {
+			$action = $result;
+		} elseif ($result === false) {
+			$action = $this->err_action;
+
+			$this->err_action = '';
+		} else {
+			$action = false;
+		}
+
+		return $action;
+	}
+	
+	public function disPatch($action) {
+		$this->err_action = $action;
+		foreach ($this->pre_action as $pre_action) {
+			$result = $this->execute($pre_action);
 
 			if ($result) {
 				$action = $result;
-
-				break;
+				while ($action) {
+					$action = $this->execute($action);
+				}
 			}
 		}
+
 		while ($action) {
-			$action = $this->execute($action, $args);
-		}
+			$action = $this->execute($action);
+		}		
 
 	}
+
 
 	private static function getUserSetting($key) {
 		return isset(self::$userSettings[$key]) ? self::$userSettings[$key] : null;
