@@ -35,4 +35,16 @@ final class Action
 			return false;
 		}
 	}
+
+	public function getName() {
+		return $this->class;
+	}
+
+	public function getMethod() {
+		return $this->method;
+	}
+
+	public function getArgs() {
+		return $this->args;
+	}
 }

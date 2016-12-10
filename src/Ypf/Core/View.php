@@ -11,7 +11,7 @@ abstract class View {
 	/**
 	 * $name string|array, otherwise exception error
 	 */
-	public function assign($name, $value) {
+	public function assign($name, $value=null) {
 		if (is_array($name)) {
 			foreach ((array) $name as $_k => $_v) {
 				$this->data[$_k] = $_v;

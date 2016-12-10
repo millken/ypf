@@ -14,7 +14,7 @@ final class Request {
 	}
 
 	public function init(\swoole_http_request $request) {
-		$this->server = isset($request->server) ? $request->server : [];
+		$this->server = isset($request->server) ? array_change_key_case($request->server, CASE_UPPER) : [];
 		$this->header = isset($request->header) ? $request->header : [];
 		$this->get = isset($request->get) ? $request->get : [];
 		$this->post = isset($request->post) ? $request->post : [];
@@ -23,7 +23,7 @@ final class Request {
 	}
 
 	public function isPost() {
-		return strtolower($this->server['REQUEST_METHOD']) == 'post';
+		return isset($this->server['REQUEST_METHOD']) && strtolower($this->server['REQUEST_METHOD']) == 'post';
 	}
 
 	public function get($name, $filter = null, $default = null) {

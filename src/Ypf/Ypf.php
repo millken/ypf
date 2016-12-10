@@ -1,20 +1,23 @@
 <?php
 /**
- * Ypf - a micro PHP 5 framework
+ * Ypf - a micro PHP7 framework
  */
 
 namespace Ypf;
 
+use Ypf\Core\Action;
+
 define("__YPF__", __DIR__);
 
 class Ypf {
-	const VERSION = '1.0.4';
+	const VERSION = '1.1.0';
 
-	private $container = array();
+	private $container = [];
 
-	protected static $userSettings = array();
+	protected static $userSettings = [];
 
-	private $pre_action = array();
+	private $pre_action = [];
+	private $default_action = null;
 
 	protected static $instances = null;
 
@@ -42,7 +45,7 @@ class Ypf {
 		}
 	}
 
-	public function __construct(array $userSettings = array()) {
+	public function __construct(array $userSettings = []) {
 		self::$userSettings = $userSettings;
 		spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
 
@@ -73,12 +76,26 @@ class Ypf {
 		return self::$instances->container;
 	}
 
-	public function addPreAction($pre_action, $args = array()) {
-		$this->pre_action[] = array(
-			'action' => $pre_action,
-			'args' => $args,
-		);
+	public function addPreAction($action, $args = []) {
+
+		$this->pre_action[] = self::action($action, $args);
 		return $this;
+	}
+
+	public function setDefaultAction($action, $args = []) {
+		$this->default_action = self::action($action, $args);
+	}
+
+	private static function action($action, $args = []) {
+		$a = false;
+		if (is_object($action) && $action instanceof Action) {
+			$a = $action;
+		}elseif(is_string($action)){
+			$a = new Action($action, $args);
+		}else{
+			throw new Exception("$action not object or string"); 
+		}
+		return $a;
 	}
 
 	private function execute($action) {
@@ -87,9 +104,7 @@ class Ypf {
 		if (is_object($result)) {
 			$action = $result;
 		} elseif ($result === false) {
-			$action = $this->err_action;
-
-			$this->err_action = '';
+			$action = $this->default_action;
 		} else {
 			$action = false;
 		}
@@ -97,11 +112,11 @@ class Ypf {
 		return $action;
 	}
 	
-	public function disPatch($action) {
-		$this->err_action = $action;
+	public function disPatch() {
+		$action = false;
 		foreach ($this->pre_action as $pre_action) {
-			$result = $this->execute($pre_action);
 
+			$result = $this->execute($pre_action);
 			if ($result) {
 				$action = $result;
 				while ($action) {

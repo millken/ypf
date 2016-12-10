@@ -9,8 +9,30 @@ final class Response {
 	protected $response;
 	protected static $instances = null;
 
+	protected static $mimes = array(
+		'image/jpeg' => 'jpg',
+		'image/bmp' => 'bmp',
+		'image/x-icon' => 'ico',
+		'image/gif' => 'gif',
+		'image/png' => 'png',
+		'application/octet-stream' => 'bin',
+		'application/javascript' => 'js',
+		'text/css' => 'css',
+		'text/html' => 'html',
+		'text/xml' => 'xml',
+		'application/x-tar' => 'tar',
+		'application/vnd.ms-powerpoint' => 'ppt',
+		'application/pdf' => 'pdf',
+		'application/x-shockwave-flash' => 'swf',
+		'application/x-zip-compressed' => 'zip',
+		'application/gzip' => 'gzip',
+		'application/x-woff' => 'woff',
+		'image/svg+xml' => 'svg',
+	);
+
 	public function __construct() {
 		self::$instances = &$this;
+		self::$mimes = array_flip(self::$mimes);
 	}
 
 	public static function &getInstance() {
@@ -41,6 +63,19 @@ final class Response {
 
 	public function getOutput() {
 		return $this->output;
+	}
+
+    public static function getFileExt($file) {
+        $s = strrchr($file, '.');
+        if ($s === false)
+        {
+            return false;
+        }
+        return strtolower(trim(substr($s, 1)));
+    }
+	public function sendfile($file) {
+		$this->response->header("Content-Type", self::$mimes[self::getFileExt($file)]);
+		$this->response->sendfile($file);
 	}
 
 	public function output() {
