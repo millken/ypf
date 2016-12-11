@@ -111,6 +111,10 @@ class Ypf {
 
 		return $action;
 	}
+
+	public function start() {
+		$this->disPatch();
+	}
 	
 	public function disPatch() {
 		$action = false;

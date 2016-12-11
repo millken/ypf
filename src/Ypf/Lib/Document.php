@@ -18,6 +18,14 @@ class Document {
 		return $this->title;
 	}
 
+	public function setGlobal($key, $value) {
+		$this->globals[$key] = $value;
+	}
+
+	public function getGlobal($key) {
+		return isset($this->globals[$key]) ? $this->globals[$key] : NULL;
+	}
+	
 	public function setDescription($description) {
 		$this->description = $description;
 	}
