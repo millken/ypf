@@ -3,6 +3,8 @@ namespace Ypf;
 
 use \Cron;
 
+define('SWOOLE_SERVER', true);
+
 class Swoole extends Ypf {
 
 	const VERSION = '1.0.4';

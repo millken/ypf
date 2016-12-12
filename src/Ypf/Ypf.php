@@ -16,7 +16,8 @@ class Ypf {
 
 	protected static $userSettings = [];
 
-	private $pre_action = [];
+	private $before_action = [];
+	private $after_action = [];
 	private $default_action = null;
 
 	protected static $instances = null;
@@ -76,9 +77,15 @@ class Ypf {
 		return self::$instances->container;
 	}
 
-	public function addPreAction($action, $args = []) {
+	public function addBeforeAction($action, $args = []) {
 
-		$this->pre_action[] = self::action($action, $args);
+		$this->before_action[] = self::action($action, $args);
+		return $this;
+	}
+
+	public function addAfterAction($action, $args = []) {
+
+		$this->after_action[] = self::action($action, $args);
 		return $this;
 	}
 
@@ -118,9 +125,9 @@ class Ypf {
 	
 	public function disPatch() {
 		$action = false;
-		foreach ($this->pre_action as $pre_action) {
+		foreach ($this->before_action as $before_action) {
 
-			$result = $this->execute($pre_action);
+			$result = $this->execute($before_action);
 			if ($result) {
 				$action = $result;
 				while ($action) {
@@ -131,8 +138,11 @@ class Ypf {
 
 		while ($action) {
 			$action = $this->execute($action);
-		}		
+		}	
 
+		foreach ($this->after_action as $after_action) {
+			$this->execute($after_action);
+		}
 	}
 
 

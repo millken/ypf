@@ -8,7 +8,7 @@ class Shm {
 
 	public function __construct($shm_id = 0x701da13b, $shm_size = 33554432) {
 		if (function_exists("shm_attach") === FALSE) {
-			die("\nYour PHP configuration needs adjustment. See: http://us2.php.net/manual/en/shmop.setup.php. To enable the System V shared memory support compile PHP with the option --enable-sysvshm.");
+			die("\nYour PHP configuration needs adjustment. To enable the System V shared memory support compile PHP with the option --enable-sysvshm.");
 		}
 		$this->shm_id = $shm_id;
 		$this->shm_size = $shm_size;
