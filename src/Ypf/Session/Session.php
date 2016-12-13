@@ -114,5 +114,9 @@ class Session {
 		if($this->started && !$this->destroyed) {
 			$this->store->set($this->sessionId, $this->sessionData, $this->dataTTL);
 		}
-	}    
+	}
+
+	public function __destruct() {
+		$this->save();
+	} 
 }

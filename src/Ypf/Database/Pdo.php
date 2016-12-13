@@ -155,6 +155,19 @@ class Pdo {
 		return null;
 	}
 
+	public function lastInsertId($name = 'id') {
+		$id = false;
+		switch(self::$option['dbtype']) {
+			case 'pgsql':
+				$id = $this->pdo->lastInsertId($name);
+			break;
+			default:	
+				$id = $this->pdo->lastInsertId();
+			break;
+		}
+		return $id;
+	}
+
 	public function save($data = []) {
 		if (!empty($data)) {
 			$this->data($data);
@@ -172,7 +185,7 @@ class Pdo {
 			$placeholder = substr(str_repeat('?,', count($keys)), 0, -1);
 			$query = "INSERT INTO $identifier" . $this->options['table'] . "$identifier($fields) VALUES($placeholder)";
 
-			return $this->query($query, array_values($data)) ? ($this->pdo->lastInsertId() ? $this->pdo->lastInsertId() : true) : false;
+			$this->query($query, array_values($data));
 			break;
 		case 'UPDATE':
 			$update_field = [];
