@@ -50,7 +50,7 @@ class Swoole extends Ypf {
 	}
 
 	public function start() {
-		$this->shm = new \Ypf\Cache\Shm;
+		$this->shm = new \Ypf\Cache\Stores\Shm;
 		$listen = isset($this->serverConfig["server"]["listen"]) ?
 		$this->serverConfig["server"]["listen"] : self::LISTEN;
 		$mode = isset($this->serverConfig["server"]["mode"]) ?

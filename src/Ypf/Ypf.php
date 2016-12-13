@@ -126,7 +126,6 @@ class Ypf {
 	public function disPatch() {
 		$action = false;
 		foreach ($this->before_action as $before_action) {
-
 			$result = $this->execute($before_action);
 			if ($result) {
 				$action = $result;
@@ -135,10 +134,6 @@ class Ypf {
 				}
 			}
 		}
-
-		while ($action) {
-			$action = $this->execute($action);
-		}	
 
 		foreach ($this->after_action as $after_action) {
 			$this->execute($after_action);

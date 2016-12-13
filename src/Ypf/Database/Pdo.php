@@ -2,8 +2,6 @@
 
 namespace Ypf\Database;
 
-use \PDO;
-
 class Pdo {
 	static $option = [];
 	protected $options = [];
@@ -43,7 +41,7 @@ class Pdo {
 		$this->lastsql = $this->setLastSql($query, $data);
 		if (PHP_SAPI == 'cli') {
 			try {
-				@$this->connection()->getAttribute(PDO::ATTR_SERVER_INFO);
+				@$this->connection()->getAttribute(\PDO::ATTR_SERVER_INFO);
 			} catch (\PDOException $e) {
 				switch(self::$option['dbtype']) {
 					case 'mysql':
@@ -73,7 +71,7 @@ class Pdo {
 		$data = empty($data) ? $this->params : $data;
 		$stmt = $this->query($sql, $data);
 
-		$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 		return $result;
 	}
 
@@ -97,16 +95,16 @@ class Pdo {
 	public function connect() {
 		try {
 			$option =  self::$option['dbtype'] == "mysql" && self::$option['charset'] ?
-			 array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . self::$option['charset']) : [];
-			$option[PDO::ATTR_TIMEOUT] = self::$option['timeout'];
-			$option[PDO::ATTR_PERSISTENT] = self::$option['presistent'];
+			 array(\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . self::$option['charset']) : [];
+			$option[\PDO::ATTR_TIMEOUT] = self::$option['timeout'];
+			$option[\PDO::ATTR_PERSISTENT] = self::$option['presistent'];
 			$this->pdo = new \PDO(
 				$this->dsn,
 				self::$option['username'],
 				self::$option['password'],
 				$option
 			);
-			$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		} catch (Exception $e) {
 			throw new Exception($e);
 		}
@@ -129,7 +127,7 @@ class Pdo {
 		$sql = $sql ? $sql : $this->getQuery();
 
 		$stmt = $this->query($sql, $this->params);
-		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
 		return $result;
 	}
 
@@ -148,7 +146,7 @@ class Pdo {
 		$sql = $sql ? $sql : $this->getQuery();
 
 		$stmt = $this->query($sql, $this->params);
-		$result = $stmt->fetch(PDO::FETCH_NUM);
+		$result = $stmt->fetch(\PDO::FETCH_NUM);
 
 		if (isset($result[0])) {
 			return $result[0];

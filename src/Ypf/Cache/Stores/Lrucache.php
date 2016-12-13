@@ -1,9 +1,9 @@
 <?php
-namespace Ypf\Cache;
+namespace Ypf\Cache\Stores;
 
-use Ypf;
+use Ypf\Cache\CacheInterface;
 
-class Lrucache implements Ypf\Cache\Cache {
+class Lrucache implements CacheInterface {
 	protected $cache = [];
 	protected $size = 0;
 

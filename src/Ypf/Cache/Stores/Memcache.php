@@ -1,7 +1,7 @@
 <?php
-namespace Ypf\Cache;
+namespace Ypf\Cache\Stores;
 
-use Ypf;
+use Ypf\Cache\CacheInterface;
 
 /**
  * Memcache封装类，支持memcache和memcached两种扩展
@@ -9,7 +9,7 @@ use Ypf;
  * @package Swoole
  * @subpackage cache
  */
-class Memcache implements Ypf\Cache\Cache {
+class Memcache implements CacheInterface {
 	/**
 	 * memcached扩展采用libmemcache，支持更多特性，更标准通用
 	 */

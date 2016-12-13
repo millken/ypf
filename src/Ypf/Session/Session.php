@@ -4,7 +4,7 @@ namespace Ypf\Session;
 
 use Ypf\Http\Request;
 use Ypf\Http\Response;
-use Ypf\Session\Stores\StoreInterface;
+use Ypf\Cache\CacheInterface;
 
 class Session {
 
@@ -26,7 +26,7 @@ class Session {
 		'httponly' => false,
 	];
 
-	public function __construct(Request $request, Response $response, StoreInterface $store, array $options = []) {
+	public function __construct(Request $request, Response $response, CacheInterface $store, array $options = []) {
 		$this->request = $request;
 		$this->response = $response;
 		$this->store = $store;
@@ -54,7 +54,7 @@ class Session {
 	}
 
     protected function loadData() {
-		$data = $this->store->read($this->sessionId);
+		$data = $this->store->get($this->sessionId);
 		$this->sessionData = $data === false ? [] : $data;
 	}
 
@@ -80,11 +80,15 @@ class Session {
 	}
 
     public function getData(): array {
-		return $this->sessionData;
+		return $this->sessionData ?? [];
 	}
 
 	public function put(string $key, $value)
 	{
+		$this->sessionData[$key] = $value;
+	}
+
+	public function set(string $key, $value) {
 		$this->sessionData[$key] = $value;
 	}
 
@@ -97,7 +101,7 @@ class Session {
 	}
 
 	public function remove(string $key)	{
-		unset($this->sessionData[$key]);
+		if(isset($this->sessionData[$key])) unset($this->sessionData[$key]);
 	}
 
 	public function destroy() {
@@ -108,11 +112,7 @@ class Session {
 
 	public function save() {
 		if($this->started && !$this->destroyed) {
-			$this->store->write($this->sessionId, $this->sessionData, $this->dataTTL);
-		}
-		// Garbage collection
-		if(mt_rand(1, 100) === 100)	{
-			$this->store->gc($this->dataTTL);
+			$this->store->set($this->sessionId, $this->sessionData, $this->dataTTL);
 		}
 	}    
 }
