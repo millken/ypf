@@ -19,6 +19,7 @@ final class Request {
 		$this->server = $this->clean($_SERVER);		
 	}
 
+	//swoole can't support multipart form data
 	public function init($request) {
 		if($request instanceof \swoole_http_request) {
 			$this->server = isset($request->server) ? array_change_key_case($request->server, CASE_UPPER) : [];

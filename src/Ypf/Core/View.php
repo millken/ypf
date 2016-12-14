@@ -28,18 +28,20 @@ abstract class View {
 	*/
 	public function fetch($template, $display = false) {
 		foreach ($this->template_dir as $key => $dir) {
+			
 			$template_file = $dir . $template;
 			if (!isset(self::$cache[$template_file])) {
 				if (!is_file($template_file)) {
 					trigger_error('Error: Could not load template ' . $template_file . '!');
 				} else {
-					self::$cache[$template_file] = file_get_contents($template_file);
+					self::$cache[$template_file] = base64_encode(file_get_contents($template_file));
 				}
 			}
 
 			extract($this->data);
 			ob_start();
-			eval("?>" . self::$cache[$template_file] . "<?php ");
+			//hack skill
+			include "data://text/plain;base64," . self::$cache[$template_file];
 			$this->output = ob_get_contents();
 			ob_end_clean();
 			if ($display) {
