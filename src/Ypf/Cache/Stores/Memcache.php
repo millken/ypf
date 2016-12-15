@@ -83,7 +83,7 @@ class Memcache implements CacheInterface {
 	 * @param $key
 	 * @return mixed
 	 */
-	function get($key) {
+	function get(string $key) {
 		return $this->cache->get($key);
 	}
 
@@ -94,7 +94,7 @@ class Memcache implements CacheInterface {
 	 * @param int $expire
 	 * @return bool
 	 */
-	function set($key, $value, $expire = 0) {
+	function set(string $key, $value, $expire = 0) {
 		if ($this->memcached) {
 			return $this->cache->set($key, $value, $expire);
 		} else {
@@ -107,7 +107,7 @@ class Memcache implements CacheInterface {
 	 * @param $key
 	 * @return bool
 	 */
-	function delete($key) {
+	function delete(string $key) {
 		return $this->cache->delete($key);
 	}
 

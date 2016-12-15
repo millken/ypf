@@ -197,7 +197,7 @@ class Pdo {
 			$this->query($query, $this->params);
 			break;
 		case 'DELETE':
-			$query = "DELETE FROM {$identifier}" . $this->options['table'] . "{$identifier}WHERE " . implode(" AND ", $this->options['where']);
+			$query = "DELETE FROM {$identifier}" . $this->options['table'] . "{$identifier} WHERE " . implode(" AND ", $this->options['where']);
 			$this->query($query, $this->params);
 			break;
 		default:

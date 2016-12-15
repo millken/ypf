@@ -8,6 +8,12 @@ abstract class View {
 	static $cache = array();
 	private $output;
 
+	public function __construct() {
+		if (!ini_get('allow_url_include')) {
+			ini_set('allow_url_include', '1');
+		}
+	}
+
 	/**
 	 * $name string|array, otherwise exception error
 	 */
