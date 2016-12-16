@@ -54,9 +54,12 @@ class Pdo {
 				$this->reconnect();
 			}
 		}
-
-		$stmt = $this->connection()->prepare($query);
-		$stmt->execute($data);
+		try {
+			$stmt = $this->connection()->prepare($query);
+			$stmt->execute($data);
+		} catch (\PDOException $e) {
+			throw new \Exception("Failed to execute query:\n" . $query . "\nUsing Parameters:\n" . print_r($data, true) . "\nWith Error:\n" . $e->getMessage());
+		}
 		$this->options = $this->params = [];
 		return $stmt;
 	}

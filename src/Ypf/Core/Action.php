@@ -31,8 +31,8 @@ final class Action
 		if(class_exists($class_name) && is_callable(array($class_name, $this->method))) {
 			$class = new $class_name();
 			return call_user_func_array(array($class, $this->method), $this->args);
-		}else{
-			return false;
+		} else {
+			return new \Exception('Error: Could not call ' . $this->class . '/' . $this->method . '!');
 		}
 	}
 
@@ -46,5 +46,9 @@ final class Action
 
 	public function getArgs() {
 		return $this->args;
+	}
+
+	public function __tostring() {
+		return "{$this->class}->{$this->method}({$this->args})";
 	}
 }

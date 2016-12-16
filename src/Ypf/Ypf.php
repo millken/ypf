@@ -108,15 +108,10 @@ class Ypf {
 	private function execute($action) {
 		$result = $action->execute();
 
-		if (is_object($result)) {
-			$action = $result;
-		} elseif ($result === false) {
-			$action = $this->default_action;
-		} else {
-			$action = false;
-		}
+		if ($result instanceof Action) {
+			return $result;
+		} 
 
-		return $action;
 	}
 
 	public function start() {
@@ -124,15 +119,18 @@ class Ypf {
 	}
 	
 	public function disPatch() {
-		$action = false;
+		$action = $this->default_action;
 		foreach ($this->before_action as $before_action) {
 			$result = $this->execute($before_action);
-			if ($result) {
+
+			if ($result instanceof Action) {
 				$action = $result;
-				while ($action) {
-					$action = $this->execute($action);
-				}
+				break;
 			}
+		}
+
+		while ($action instanceof Action) {
+			$action = $this->execute($action);
 		}
 
 		foreach ($this->after_action as $after_action) {
