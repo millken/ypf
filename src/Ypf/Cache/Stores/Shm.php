@@ -49,7 +49,6 @@ class Shm implements CacheInterface {
 		}
 	}
 	public function has($key) {
-		var_dump(shm_has_var($this->shm, $this->shm_key($key)));
 		if (shm_has_var($this->shm, $this->shm_key($key))) {
 			return true;
 		} else {

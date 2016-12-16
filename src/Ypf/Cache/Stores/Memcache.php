@@ -94,7 +94,8 @@ class Memcache implements CacheInterface {
 	 * @param int $expire
 	 * @return bool
 	 */
-	function set(string $key, $value, $expire = 0) {
+	function set(string $key, $value, int $ttl = -1) {
+		$expire = max(0, $ttl);
 		if ($this->memcached) {
 			return $this->cache->set($key, $value, $expire);
 		} else {
