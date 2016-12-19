@@ -8,12 +8,6 @@ abstract class View {
 	static $cache = [];
 	private $output;
 
-	public function __construct() {
-		if (!ini_get('allow_url_include')) {
-			ini_set('allow_url_include', '1');
-		}
-	}
-
 	/**
 	 * $name string|array, otherwise exception error
 	 */
@@ -29,25 +23,13 @@ abstract class View {
 		}
 	}
 
-	/*
-		 * $template string
-	*/
-	public function fetch($template, $display = false) {
+	public function fetch(string $template, bool $display = false) {
 		foreach ($this->template_dir as $key => $dir) {
 			
 			$template_file = $dir . $template;
-			if (defined('SWOOLE_SERVER') && !isset(self::$cache[$template_file])) {
-				if (!is_file($template_file)) {
-					trigger_error('Error: Could not load template ' . $template_file . '!');
-				} else {
-					self::$cache[$template_file] = base64_encode(file_get_contents($template_file));
-				}
-			}
 
 			extract($this->data);
 			ob_start();
-			(defined('SWOOLE_SERVER') && 
-			include "data://text/plain;base64," . self::$cache[$template_file]) ||
 			include $template_file;
 			$this->output = ob_get_contents();
 			$this->data = [];
@@ -62,10 +44,7 @@ abstract class View {
 		}
 	}
 
-	/*
-		 * $template string
-	*/
-	public function display($template) {
+	public function display(string $template) {
 		$this->fetch($template, true);
 	}
 

@@ -8,15 +8,13 @@ final class Action
 	private $method;
 	private $args = array();
 
-	public function __construct($action, $args = array())
-	{
+	public function __construct($action, $args = array()) {
 		if (is_array($action)) {
 			list($class_name, $method) = $action;
 		}else{
 			$pos = strrpos($action,'\\');
 			$class_name = substr($action, 0, $pos);
 			$method = substr($action, $pos + 1);
-			
 		}
 		$this->class = $class_name;
 		$this->method = $method;

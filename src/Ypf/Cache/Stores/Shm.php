@@ -12,7 +12,7 @@ class Shm implements CacheInterface {
 		if (function_exists("shm_attach") === FALSE) {
 			die("\nYour PHP configuration needs adjustment. To enable the System V shared memory support compile PHP with the option --enable-sysvshm.\n");
 		}
-		$this->shm_id = $shm_id;
+		$this->shm_id = ftok(__FILE__, 'a');
 		$this->shm_size = $shm_size;
 		$this->attach();
 	}
@@ -57,15 +57,11 @@ class Shm implements CacheInterface {
 	}
 
 	public function shm_key($key) {
-		return (int) sprintf("%u\n", crc32($key));
+		return (int) sprintf("%u", crc32($key));
 	}
 
 	public function __wakeup() {
 		$this->attach();
 	}
 
-	public function __destruct() {
-		$this->dettach();
-		unset($this);
-	}
 }

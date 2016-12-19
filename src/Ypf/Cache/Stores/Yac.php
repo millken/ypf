@@ -9,23 +9,29 @@ class Yac implements CacheInterface {
 
 	public function __construct($prefix='') {
 		if (!extension_loaded("yac")) {
-			die("Module Yac is not compiled into PHP");
+			die("Module Yac is not compiled into PHP, See https://github.com/laruence/yac");
 		}
-		$this->store = new Yac($prefix);
+		$this->store = new \Yac($prefix);
 	}
 
-	public function set($key, $value, $ttl = -1) {
-        $ttl = $ttl == -1 ? 999999999 : $ttl;
-		$this->store->set($key, $value, $ttl);
+	public function set(string $key, $value, int $ttl = -1) {
+		if($ttl == -1) {
+			$this->store->set($this->key($key), $value);	
+		}else{
+			$this->store->set($this->key($key), $value, $ttl);
+		}
 	}
 
 	public function get(string $key) {
-		return $this->store->get($key);
+		return $this->store->get($this->key($key));
 	}
 
-
 	public function delete(string $key) {
-		$this->store->delete($key);
+		$this->store->delete($this->key($key));
+	}
+
+	private function key($key) {
+		return sprintf("%u", crc32($key));
 	}
 
 }
