@@ -7,7 +7,6 @@ define('SWOOLE_SERVER', true);
 
 class Swoole extends Ypf {
 
-	const VERSION = '1.0.4';
 	const LISTEN = '127.0.0.1:9002';
 	const MODE = 'base';
 
