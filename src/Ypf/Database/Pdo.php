@@ -196,7 +196,7 @@ class Pdo {
 			foreach ($this->options['data'] as $key => $value) {
 				$update_field[] = "{$identifier}$key{$identifier}= ?";
 			}
-			$query = "UPDATE {$identifier}" . $this->options['table'] . "{$identifier} SET " . implode(",", $update_field) . "WHERE " . implode(" AND ", $this->options['where']);
+			$query = "UPDATE {$identifier}" . $this->options['table'] . "{$identifier} SET " . implode(",", $update_field) . " WHERE " . implode(" AND ", $this->options['where']);
 			$this->query($query, $this->params);
 			break;
 		case 'DELETE':

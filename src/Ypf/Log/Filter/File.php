@@ -1,6 +1,8 @@
 <?php
 namespace Ypf\Log\Filter;
 
+use Ypf\Exception;
+
 class File extends Filter {
 	private $logFilePath;
 	private $fileHandle;

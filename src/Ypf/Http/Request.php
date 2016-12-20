@@ -21,13 +21,14 @@ final class Request {
 
 	//swoole can't support multipart form data
 	public function init($request) {
+		global $_GET, $_SERVER, $_COOKIE, $_POST, $_FILES;
 		if($request instanceof \swoole_http_request) {
-			$this->server = isset($request->server) ? array_change_key_case($request->server, CASE_UPPER) : [];
+			$_SERVER = $this->server = isset($request->server) ? array_change_key_case($request->server, CASE_UPPER) : [];
 			$this->header = isset($request->header) ? $request->header : [];
-			$this->get = isset($request->get) ? $request->get : [];
-			$this->post = isset($request->post) ? $request->post : [];
-			$this->cookie = isset($request->cookie) ? $request->cookie : [];
-			$this->files = isset($request->files) ? $request->files : [];
+			$_GET = $this->get = isset($request->get) ? $request->get : [];
+			$_POST = $this->post = isset($request->post) ? $request->post : [];
+			$_COOKIE = $this->cookie = isset($request->cookie) ? $request->cookie : [];
+			$_FILES = $this->files = isset($request->files) ? $request->files : [];
 		}
 	}
 

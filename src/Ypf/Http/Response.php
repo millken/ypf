@@ -126,16 +126,16 @@ final class Response {
 	}
 
 	private function output_swoole() {
-		if ($this->output) {
-			if ($this->level) {
-				$this->response->gzip($this->level);
-			}
 
-			foreach ($this->headers as $header) {
-				$this->response->header($header[0], $header[1]);
-			}
-			$this->response->end($this->output);
+		if ($this->level) {
+			$this->response->gzip($this->level);
 		}
+
+		foreach ($this->headers as $header) {
+			$this->response->header($header[0], $header[1]);
+		}
+		$this->response->end($this->output);
+	
 		$this->headers = [];
 		$this->output = '';
 		$this->level = 0;
