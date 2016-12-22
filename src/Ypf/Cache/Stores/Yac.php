@@ -9,8 +9,13 @@ class Yac implements CacheInterface {
 
 	public function __construct($prefix='') {
 		if (!extension_loaded("yac")) {
-			die("Module Yac is not compiled into PHP, See https://github.com/laruence/yac");
+			die("Module Yac is not compiled into PHP, See https://github.com/laruence/yac\n");
 		}
+
+		if(ini_get("yac.enable_cli") === false && !ini_set("yac.enable_cli", 1)) {
+			die("set yac.enable_cli=1 in php.ini\n");
+		}
+
 		$this->store = new \Yac($prefix);
 	}
 

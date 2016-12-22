@@ -9,10 +9,7 @@ class Pdo {
 	protected $lastsql = "";
 	protected $dsn, $pdo;
 	protected $methods = array('from', 'data', 'field', 'table', 'order', 'alias', 'having', 'group', 'lock', 'distinct', 'auto');
-	public function __construct($options = []) {
-		if (!is_array($options)) {
-			throw new \InvalidArgumentException('options must be array');
-		}
+	public function __construct(array $options = []) {
 		$default_options = array(
 			'dbtype' => 'mysql',
 			'host' => '127.0.0.1',

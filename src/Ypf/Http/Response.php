@@ -54,7 +54,7 @@ final class Response {
 		if(defined("SWOOLE_SERVER")) {
 			$this->response->status($status);
 			$this->response->header("Location", $url);
-			$this->response->end();
+			$this->response->end('');
 		}else{
 			header('Status: ' . $status);
 			header('Location: ' . $url);
