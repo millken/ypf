@@ -54,7 +54,7 @@ final class Response {
 		if(defined("SWOOLE_SERVER")) {
 			$this->response->status($status);
 			$this->response->header("Location", $url);
-			$this->response->end('');
+			$this->response->end();
 		}else{
 			header('Status: ' . $status);
 			header('Location: ' . $url);
@@ -123,29 +123,32 @@ final class Response {
 	public function sendfile($file) {
 		$this->response->header("Content-Type", self::$mimes[self::getFileExt($file)]);
 		$this->response->sendfile($file);
+
 	}
 
 	private function output_swoole() {
 
-		if ($this->level) {
-			$this->response->gzip($this->level);
-		}
+		if ($this->output != '') {
+			if ($this->level) {
+				$this->response->gzip($this->level);
+			}
 
-		foreach ($this->headers as $header) {
-			$this->response->header($header[0], $header[1]);
+			foreach ($this->headers as $header) {
+				$this->response->header($header[0], $header[1]);
+			}
+			$this->response->end($this->output);
+		
+			$this->headers = [];
+			$this->output = '';
+			$this->level = 0;
 		}
-		$this->response->end($this->output);
-	
-		$this->headers = [];
-		$this->output = '';
-		$this->level = 0;
 	}
 
 	public function output() {
 		if(defined("SWOOLE_SERVER")) {
 			$this->output_swoole();
 		}else
-		if ($this->output) {
+		if ($this->output != '') {
 			if ($this->level) {
 				$output = $this->compress($this->output, $this->level);
 			} else {

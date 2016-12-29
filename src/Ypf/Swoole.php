@@ -171,7 +171,7 @@ class Swoole extends Ypf {
 			$processName = sprintf("$name:%s", 0, $worker_name);
 			\swoole_set_process_name($processName);
 			$a = new \Ypf\Core\Action($config['action'], array('worker_name' => $worker_name));
-			if(!$a->execute()) {
+			if($a->execute() instanceof \Exception) {
 				die ("execute : {$config['action']}        [ Fail ]\n");
 			}
 		}, false, false);
