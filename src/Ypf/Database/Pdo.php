@@ -180,7 +180,7 @@ class Pdo {
 		if (!isset($this->options['type'])) {
 			$this->options['type'] = isset($this->options['where']) ? 'UPDATE' : 'INSERT';
 		}
-        $identifier = self::$option['dbtype'] == "mysql" ? "`" : "\"" ;
+        $identifier = self::$option['dbtype'] == "mysql" ? "`" : "" ;
 
 		switch ($this->options['type']) {
 		case 'INSERT':
