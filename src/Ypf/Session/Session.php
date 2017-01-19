@@ -64,10 +64,9 @@ class Session {
 		$this->sessionId = $this->request->cookie($this->cookieName);
 		if($this->sessionId === false) {
 			$this->sessionId = $this->generateId();
+			$this->setCookie();
 		}
         
-		$this->setCookie();
-		
 		$this->loadData();
 	} 
 
