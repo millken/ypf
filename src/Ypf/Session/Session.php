@@ -47,7 +47,7 @@ class Session {
 		return hash('sha256', random_bytes(16));
 	}
 
-    protected function setCookie() {
+    public function setCookie() {
 		$ttl = $this->cookieTTL === 0 ? 0 : $this->cookieTTL + time();
 		$this->response->cookie($this->cookieName, $this->sessionId, $ttl, $this->cookieOptions['path'],
          $this->cookieOptions['domain'], $this->cookieOptions['secure'], $this->cookieOptions['httponly']);
@@ -64,10 +64,9 @@ class Session {
 		$this->sessionId = $this->request->cookie($this->cookieName);
 		if($this->sessionId === false) {
 			$this->sessionId = $this->generateId();
+			$this->setCookie();
 		}
         
-		$this->setCookie();
-		
 		$this->loadData();
 	} 
 
@@ -102,6 +101,14 @@ class Session {
 
 	public function remove(string $key)	{
 		if(isset($this->sessionData[$key])) unset($this->sessionData[$key]);
+	}
+
+	public function setDataTtl(int $ttl) {
+		$this->dataTTL = $ttl;
+	}
+
+	public function setCookieTtl(int $ttl) {
+		$this->cookieTTL = $ttl;
 	}
 
 	public function destroy() {
