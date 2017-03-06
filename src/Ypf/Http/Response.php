@@ -44,29 +44,36 @@ final class Response {
 	}
 
 	public function init($response) {
-		if($response instanceof \swoole_http_response) {
+		if ($response instanceof \swoole_http_response) {
 			$this->response = $response;
+		}
+	}
+
+	public function status($status = 200) {
+		if (defined("SWOOLE_SERVER")) {
+			$this->response->status($status);
+		} else {
+			header('Status: ' . $status);
 		}
 	}
 
 	public function redirect($url, $status = 302) {
 		$url = str_replace(array('&amp;', "\n", "\r"), array('&', '', ''), $url);
-		if(defined("SWOOLE_SERVER")) {
-			$this->response->status($status);
+		$this->status($status);
+		if (defined("SWOOLE_SERVER")) {
 			$this->response->header("Location", $url);
 			$this->response->end();
-		}else{
-			header('Status: ' . $status);
+		} else {
 			header('Location: ' . $url);
 			exit();
 		}
 	}
 
-	public function cookie(string $key, string $value = '', int $expire = 0 , string $path = '/', string $domain  = '', bool $secure = false , bool $httponly = false) {
-		if(defined("SWOOLE_SERVER")) {
-			$this->response->cookie($key,  $value, $expire, $path, $domain, $secure, $httponly);
-		}else{
-			setcookie($key,  $value, $expire, $path, $domain, $secure, $httponly);
+	public function cookie(string $key, string $value = '', int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httponly = false) {
+		if (defined("SWOOLE_SERVER")) {
+			$this->response->cookie($key, $value, $expire, $path, $domain, $secure, $httponly);
+		} else {
+			setcookie($key, $value, $expire, $path, $domain, $secure, $httponly);
 		}
 	}
 
@@ -103,7 +110,7 @@ final class Response {
 
 		return gzencode($data, (int) $level);
 	}
-	
+
 	public function setOutput($output) {
 		$this->output = $output;
 	}
@@ -112,13 +119,13 @@ final class Response {
 		return $this->output;
 	}
 
-    public static function getFileExt($file) {
-        $s = strrchr($file, '.');
-        if ($s === false) {
-            return false;
-        }
-        return strtolower(trim(substr($s, 1)));
-    }
+	public static function getFileExt($file) {
+		$s = strrchr($file, '.');
+		if ($s === false) {
+			return false;
+		}
+		return strtolower(trim(substr($s, 1)));
+	}
 
 	public function sendfile($file) {
 		$this->response->header("Content-Type", self::$mimes[self::getFileExt($file)]);
@@ -137,7 +144,7 @@ final class Response {
 				$this->response->header($header[0], $header[1]);
 			}
 			$this->response->end($this->output);
-		
+
 			$this->headers = [];
 			$this->output = '';
 			$this->level = 0;
@@ -145,9 +152,9 @@ final class Response {
 	}
 
 	public function output() {
-		if(defined("SWOOLE_SERVER")) {
+		if (defined("SWOOLE_SERVER")) {
 			$this->output_swoole();
-		}else
+		} else
 		if ($this->output != '') {
 			if ($this->level) {
 				$output = $this->compress($this->output, $this->level);
