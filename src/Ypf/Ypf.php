@@ -6,15 +6,17 @@
 namespace Ypf;
 
 use Ypf\Core\Action;
+use Ypf\Reference\ParameterReference;
+use Ypf\Reference\ServiceReference;
 
 define("__YPF__", __DIR__);
 
 class Ypf {
-	const VERSION = '1.1.0';
+	const VERSION = '1.2.0';
 
 	private $container = [];
 
-	protected static $userSettings = [];
+	private $services = [];
 
 	private $before_action = [];
 	private $after_action = [];
@@ -28,7 +30,7 @@ class Ypf {
 		if (substr(trim($className, '\\'), 0, strlen($thisClass)) === $thisClass) {
 			$baseDir = substr($baseDir, 0, -strlen($thisClass));
 		} else {
-			$baseDir = self::getUserSetting('root');
+			$baseDir = $this->services['root'];
 		}
 		$baseDir .= '/';
 		$className = ltrim($className, '\\');
@@ -46,20 +48,25 @@ class Ypf {
 		}
 	}
 
-	public function __construct(array $userSettings = []) {
-		self::$userSettings = $userSettings;
+	public function __construct(array $services = []) {
+		$this->services = $services;
+
 		spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
 
-		if (self::getUserSetting('time_zone')) {
-			date_default_timezone_set(self::$userSettings['time_zone']);
+		if ($this->has('time_zone')) {
+			date_default_timezone_set($this->services['time_zone']);
 		}
 
-		if (self::getUserSetting('friendly_error') && PHP_SAPI !== 'cli') {
+		if ($this->has('friendly_error') && PHP_SAPI !== 'cli') {
 			self::registerErrorHandle();
 		}
 
 		self::$instances = &$this;
 	}
+
+    public function has($name) {
+        return isset($this->services[$name]);
+    }
 
 	public static function registerErrorHandle() {
 
@@ -138,10 +145,50 @@ class Ypf {
 		}
 	}
 
+	private function createService($name) {
+		$entry = &$this->services[$name];
+        if (!is_array($entry) || !isset($entry['class'])) {
+            throw new Exception($name.' service entry must be an array containing a \'class\' key');
+        } elseif (!class_exists($entry['class'])) {
+            throw new Exception($name.' service class does not exist: '.$entry['class']);
+        }
+		$arguments = isset($entry['arguments']) ? $this->resolveArguments($entry['arguments']) : [];
 
-	private static function getUserSetting($key) {
-		return isset(self::$userSettings[$key]) ? self::$userSettings[$key] : null;
+        $reflector = new \ReflectionClass($entry['class']);
+        $service = $reflector->newInstanceArgs($arguments);
+        if (isset($entry['calls'])) {
+            $this->initializeService($service, $name, $entry['calls']);
+        }
+        return $service;
 	}
+
+    private function resolveArguments(array $argumentDefinitions) {
+        $arguments = [];
+        foreach ($argumentDefinitions as $argumentDefinition) {
+            if ($argumentDefinition instanceof ServiceReference) {
+                $argumentServiceName = $argumentDefinition->getName();
+                $arguments[] = $this->get($argumentServiceName);
+            } elseif ($argumentDefinition instanceof ParameterReference) {
+                $argumentParameterName = $argumentDefinition->getName();
+                $arguments[] = $this->config->get($argumentParameterName);
+            } else {
+                $arguments[] = $argumentDefinition;
+            }
+        }
+        return $arguments;
+    }
+
+    private function initializeService($service, $name, array $callDefinitions) {
+        foreach ($callDefinitions as $callDefinition) {
+            if (!is_array($callDefinition) || !isset($callDefinition['method'])) {
+                throw new Exception($name.' service calls must be arrays containing a \'method\' key');
+            } elseif (!is_callable([$service, $callDefinition['method']])) {
+                throw new Exception($name.' service asks for call to uncallable method: '.$callDefinition['method']);
+            }
+            $arguments = isset($callDefinition['arguments']) ? $this->resolveArguments($callDefinition['arguments']) : [];
+            call_user_func_array([$service, $callDefinition['method']], $arguments);
+        }
+    }
 
 	public function set($name, $value) {
 		return $this->__set($name, $value);
@@ -152,6 +199,13 @@ class Ypf {
 	}
 
 	public function __get($name) {
+		if (isset($this->container[$name])) {
+			return $this->container[$name];
+		}
+		if (!isset($this->services[$name])) {
+            throw new Exception('Service not found: ' . $name);
+        }
+		$this->container[$name] = $this->createService($name);
 		return $this->container[$name];
 	}
 
