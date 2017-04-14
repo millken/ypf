@@ -16,7 +16,7 @@ class Ypf {
 
 	private $container = [];
 
-	private $services = [];
+	protected static $services = [];
 
 	private $before_action = [];
 	private $after_action = [];
@@ -30,7 +30,7 @@ class Ypf {
 		if (substr(trim($className, '\\'), 0, strlen($thisClass)) === $thisClass) {
 			$baseDir = substr($baseDir, 0, -strlen($thisClass));
 		} else {
-			$baseDir = $this->services['root'];
+			$baseDir = self::$services['root'];
 		}
 		$baseDir .= '/';
 		$className = ltrim($className, '\\');
@@ -49,12 +49,12 @@ class Ypf {
 	}
 
 	public function __construct(array $services = []) {
-		$this->services = $services;
+		self::$services = $services;
 
 		spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
 
 		if ($this->has('time_zone')) {
-			date_default_timezone_set($this->services['time_zone']);
+			date_default_timezone_set(self::$services['time_zone']);
 		}
 
 		if ($this->has('friendly_error') && PHP_SAPI !== 'cli') {
@@ -65,7 +65,7 @@ class Ypf {
 	}
 
     public function has($name) {
-        return isset($this->services[$name]);
+        return isset(self::$services[$name]);
     }
 
 	public static function registerErrorHandle() {
@@ -146,7 +146,7 @@ class Ypf {
 	}
 
 	private function createService($name) {
-		$entry = &$this->services[$name];
+		$entry = self::$services[$name];
         if (!is_array($entry) || !isset($entry['class'])) {
             throw new Exception($name.' service entry must be an array containing a \'class\' key');
         } elseif (!class_exists($entry['class'])) {
