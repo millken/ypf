@@ -64,9 +64,9 @@ class Ypf {
 		self::$instances = &$this;
 	}
 
-    public function has($name) {
-        return isset(self::$services[$name]);
-    }
+	public function has($name) {
+		return isset(self::$services[$name]);
+	}
 
 	public static function registerErrorHandle() {
 
@@ -104,10 +104,10 @@ class Ypf {
 		$a = false;
 		if (is_object($action) && $action instanceof Action) {
 			$a = $action;
-		}elseif(is_string($action)){
+		} elseif (is_string($action)) {
 			$a = new Action($action, $args);
-		}else{
-			throw new Exception("$action not object or string"); 
+		} else {
+			throw new Exception("$action not object or string");
 		}
 		return $a;
 	}
@@ -117,14 +117,14 @@ class Ypf {
 
 		if ($result instanceof Action) {
 			return $result;
-		} 
+		}
 
 	}
 
 	public function start() {
 		$this->disPatch();
 	}
-	
+
 	public function disPatch() {
 		$action = $this->default_action;
 		foreach ($this->before_action as $before_action) {
@@ -147,48 +147,48 @@ class Ypf {
 
 	private function createService($name) {
 		$entry = self::$services[$name];
-        if (!is_array($entry) || !isset($entry['class'])) {
-            throw new Exception($name.' service entry must be an array containing a \'class\' key');
-        } elseif (!class_exists($entry['class'])) {
-            throw new Exception($name.' service class does not exist: '.$entry['class']);
-        }
+		if (!is_array($entry) || !isset($entry['class'])) {
+			throw new Exception($name . ' service entry must be an array containing a \'class\' key');
+		} elseif (!class_exists($entry['class'])) {
+			throw new Exception($name . ' service class does not exist: ' . $entry['class']);
+		}
 		$arguments = isset($entry['arguments']) ? $this->resolveArguments($entry['arguments']) : [];
 
-        $reflector = new \ReflectionClass($entry['class']);
-        $service = $reflector->newInstanceArgs($arguments);
-        if (isset($entry['calls'])) {
-            $this->initializeService($service, $name, $entry['calls']);
-        }
-        return $service;
+		$reflector = new \ReflectionClass($entry['class']);
+		$service = $reflector->newInstanceArgs($arguments);
+		if (isset($entry['calls'])) {
+			$this->initializeService($service, $name, $entry['calls']);
+		}
+		return $service;
 	}
 
-    private function resolveArguments(array $argumentDefinitions) {
-        $arguments = [];
-        foreach ($argumentDefinitions as $argumentDefinition) {
-            if ($argumentDefinition instanceof ServiceReference) {
-                $argumentServiceName = $argumentDefinition->getName();
-                $arguments[] = $this->get($argumentServiceName);
-            } elseif ($argumentDefinition instanceof ParameterReference) {
-                $argumentParameterName = $argumentDefinition->getName();
-                $arguments[] = $this->config->get($argumentParameterName);
-            } else {
-                $arguments[] = $argumentDefinition;
-            }
-        }
-        return $arguments;
-    }
+	private function resolveArguments(array $argumentDefinitions) {
+		$arguments = [];
+		foreach ($argumentDefinitions as $argumentDefinition) {
+			if ($argumentDefinition instanceof ServiceReference) {
+				$argumentServiceName = $argumentDefinition->getName();
+				$arguments[] = $this->get($argumentServiceName);
+			} elseif ($argumentDefinition instanceof ParameterReference) {
+				$argumentParameterName = $argumentDefinition->getName();
+				$arguments[] = $this->config->get($argumentParameterName);
+			} else {
+				$arguments[] = $argumentDefinition;
+			}
+		}
+		return $arguments;
+	}
 
-    private function initializeService($service, $name, array $callDefinitions) {
-        foreach ($callDefinitions as $callDefinition) {
-            if (!is_array($callDefinition) || !isset($callDefinition['method'])) {
-                throw new Exception($name.' service calls must be arrays containing a \'method\' key');
-            } elseif (!is_callable([$service, $callDefinition['method']])) {
-                throw new Exception($name.' service asks for call to uncallable method: '.$callDefinition['method']);
-            }
-            $arguments = isset($callDefinition['arguments']) ? $this->resolveArguments($callDefinition['arguments']) : [];
-            call_user_func_array([$service, $callDefinition['method']], $arguments);
-        }
-    }
+	private function initializeService($service, $name, array $callDefinitions) {
+		foreach ($callDefinitions as $callDefinition) {
+			if (!is_array($callDefinition) || !isset($callDefinition['method'])) {
+				throw new Exception($name . ' service calls must be arrays containing a \'method\' key');
+			} elseif (!is_callable([$service, $callDefinition['method']])) {
+				throw new Exception($name . ' service asks for call to uncallable method: ' . $callDefinition['method']);
+			}
+			$arguments = isset($callDefinition['arguments']) ? $this->resolveArguments($callDefinition['arguments']) : [];
+			call_user_func_array([$service, $callDefinition['method']], $arguments);
+		}
+	}
 
 	public function set($name, $value) {
 		return $this->__set($name, $value);
@@ -202,9 +202,9 @@ class Ypf {
 		if (isset($this->container[$name])) {
 			return $this->container[$name];
 		}
-		if (!isset($this->services[$name])) {
-            throw new Exception('Service not found: ' . $name);
-        }
+		if (!isset(self::$services[$name])) {
+			throw new Exception('Service not found: ' . $name);
+		}
 		$this->container[$name] = $this->createService($name);
 		return $this->container[$name];
 	}
