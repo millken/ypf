@@ -4,6 +4,7 @@ namespace Ypf\Core;
 
 abstract class View {
 	private $template_dir = [];
+	private $base_dir = '';
 	private $data = [];
 	static $cache = [];
 	private $output;
@@ -11,7 +12,7 @@ abstract class View {
 	/**
 	 * $name string|array, otherwise exception error
 	 */
-	public function assign($name, $value=null) {
+	public function assign($name, $value = null) {
 		if (is_array($name)) {
 			foreach ((array) $name as $_k => $_v) {
 				$this->data[$_k] = $_v;
@@ -25,8 +26,8 @@ abstract class View {
 
 	public function fetch(string $template, bool $display = false) {
 		foreach ($this->template_dir as $key => $dir) {
-			
-			$template_file = $dir . $template;
+
+			$template_file = $this->base_dir . $dir . $template;
 
 			extract($this->data);
 			ob_start();
@@ -46,6 +47,10 @@ abstract class View {
 
 	public function display(string $template) {
 		$this->fetch($template, true);
+	}
+
+	public function setBaseDir($base_dir) {
+		$this->base_dir = $base_dir;
 	}
 
 	/*
