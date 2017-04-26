@@ -118,7 +118,9 @@ class Ypf {
 		if ($result instanceof Action) {
 			return $result;
 		}
-
+		if ($result instanceof Exception) {
+			throw new Exception($result->getMessage());
+		}
 	}
 
 	public function start() {

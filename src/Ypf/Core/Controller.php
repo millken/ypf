@@ -6,7 +6,7 @@ abstract class Controller {
 	public static $container;
 
 	public function __construct() {
-		self::$container = \Ypf\Ypf::getContainer();
+		self::$container = \Ypf\Ypf::getInstance();
 	}
 
 	protected function getCalledControllerName() {
@@ -24,6 +24,6 @@ abstract class Controller {
 	}
 
 	public function __get($name) {
-		return self::$container[$name];
+		return self::$container->$name;
 	}
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace Ypf\Core;
+use \Ypf\Exception;
 
 final class Action 
 {
@@ -12,7 +13,7 @@ final class Action
 		if (is_array($action)) {
 			list($class_name, $method) = $action;
 		}else{
-			$pos = strrpos($action,'\\');
+			$pos = strrpos($action, '\\');
 			$class_name = substr($action, 0, $pos);
 			$method = substr($action, $pos + 1);
 		}
@@ -30,7 +31,7 @@ final class Action
 			$class = new $class_name();
 			return call_user_func_array(array($class, $this->method), $this->args);
 		} else {
-			return new \Exception('Error: Could not call ' . $this->class . '/' . $this->method . '!');
+			return new Exception('Error: Could not call ' . $this->class . '/' . $this->method . '!');
 		}
 	}
 

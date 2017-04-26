@@ -6,7 +6,7 @@ abstract class Model {
 	public static $container;
 
 	public function __construct() {
-		self::$container = \Ypf\Ypf::getContainer();
+		self::$container = \Ypf\Ypf::getInstance();
 	}
 
 	public function __set($name, $value) {
@@ -14,6 +14,6 @@ abstract class Model {
 	}
 
 	public function __get($name) {
-		return self::$container[$name];
+		return self::$container->$name;
 	}
 }
