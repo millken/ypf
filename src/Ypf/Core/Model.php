@@ -10,7 +10,7 @@ abstract class Model {
 	}
 
 	public function __set($name, $value) {
-		self::$container[$name] = $value;
+		self::$container->$name = $value;
 	}
 
 	public function __get($name) {

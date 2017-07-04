@@ -20,7 +20,7 @@ abstract class Controller {
 	}
 
 	public function __set($name, $value) {
-		self::$container[$name] = $value;
+		self::$container->$name = $value;
 	}
 
 	public function __get($name) {
