@@ -1,7 +1,7 @@
 <?php
-namespace Ypf\Cache;
+namespace Ypf\Cache\Stores;
 
-use Ypf;
+use Ypf\Cache\CacheInterface;
 
 /**
  * Memcache封装类，支持memcache和memcached两种扩展
@@ -9,7 +9,7 @@ use Ypf;
  * @package Swoole
  * @subpackage cache
  */
-class Memcache implements Ypf\Cache\Cache {
+class Memcache implements CacheInterface {
 	/**
 	 * memcached扩展采用libmemcache，支持更多特性，更标准通用
 	 */
@@ -83,7 +83,7 @@ class Memcache implements Ypf\Cache\Cache {
 	 * @param $key
 	 * @return mixed
 	 */
-	function get($key) {
+	function get(string $key) {
 		return $this->cache->get($key);
 	}
 
@@ -94,7 +94,8 @@ class Memcache implements Ypf\Cache\Cache {
 	 * @param int $expire
 	 * @return bool
 	 */
-	function set($key, $value, $expire = 0) {
+	function set(string $key, $value, int $ttl = -1) {
+		$expire = max(0, $ttl);
 		if ($this->memcached) {
 			return $this->cache->set($key, $value, $expire);
 		} else {
@@ -107,7 +108,7 @@ class Memcache implements Ypf\Cache\Cache {
 	 * @param $key
 	 * @return bool
 	 */
-	function delete($key) {
+	function delete(string $key) {
 		return $this->cache->delete($key);
 	}
 

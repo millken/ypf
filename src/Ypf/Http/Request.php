@@ -1,13 +1,14 @@
 <?php
 
-namespace Ypf\Lib;
+namespace Ypf\Http;
 
-class Request {
-	public $get = array();
-	public $post = array();
-	public $cookie = array();
-	public $files = array();
-	public $server = array();
+final class Request {
+	public $get = [];
+	public $post = [];
+	public $cookie = [];
+	public $files = [];
+	public $server = [];
+	public $header = [];
 
 	public function __construct() {
 		$this->get = $this->clean($_GET);
@@ -15,7 +16,20 @@ class Request {
 		$this->request = $this->clean($_REQUEST);
 		$this->cookie = $this->clean($_COOKIE);
 		$this->files = $this->clean($_FILES);
-		$this->server = $this->clean($_SERVER);
+		$this->server = $this->clean($_SERVER);		
+	}
+
+	//swoole can't support multipart form data
+	public function init($request) {
+		global $_GET, $_SERVER, $_COOKIE, $_POST, $_FILES;
+		if($request instanceof \swoole_http_request) {
+			$_SERVER = $this->server = isset($request->server) ? array_change_key_case($request->server, CASE_UPPER) : [];
+			$this->header = isset($request->header) ? $request->header : [];
+			$_GET = $this->get = isset($request->get) ? $request->get : [];
+			$_POST = $this->post = isset($request->post) ? $request->post : [];
+			$_COOKIE = $this->cookie = isset($request->cookie) ? $request->cookie : [];
+			$_FILES = $this->files = isset($request->files) ? $request->files : [];
+		}
 	}
 
 	public function clean($data) {
@@ -33,7 +47,11 @@ class Request {
 	}
 
 	public function isPost() {
-		return strtolower($this->server['REQUEST_METHOD']) == 'post';
+		return isset($this->server['REQUEST_METHOD']) && strtolower($this->server['REQUEST_METHOD']) == 'post';
+	}
+
+	public function cookie($name) {
+		return $this->cookie[$name] ?? false;
 	}
 
 	public function get($name, $filter = null, $default = null) {
@@ -59,4 +77,5 @@ class Request {
 		}
 		return $value;
 	}
+
 }

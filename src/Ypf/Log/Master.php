@@ -23,7 +23,7 @@ class Master {
 		 * %f   file
 		 * %l   line
 		 * %m message
-		 * %l   level
+		 * %p   level
 	*/
 	protected static function parseLayout($layout) {
 		$layout = is_null($layout) ? self::$defaultLayout : $layout;

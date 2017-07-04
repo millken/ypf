@@ -3,9 +3,10 @@ namespace Ypf;
 
 use \Cron;
 
+define('SWOOLE_SERVER', true);
+
 class Swoole extends Ypf {
 
-	const VERSION = '1.0.4';
 	const LISTEN = '127.0.0.1:9002';
 	const MODE = 'base';
 
@@ -48,7 +49,7 @@ class Swoole extends Ypf {
 	}
 
 	public function start() {
-		$this->shm = new \Ypf\Cache\Shm;
+		$this->shm = new \Ypf\Cache\Stores\Shm;
 		$listen = isset($this->serverConfig["server"]["listen"]) ?
 		$this->serverConfig["server"]["listen"] : self::LISTEN;
 		$mode = isset($this->serverConfig["server"]["mode"]) ?
@@ -118,7 +119,10 @@ class Swoole extends Ypf {
 			}
 
 			swoole_timer_after(1000 * $timeNs, function () use ($worker_name, $config) {
-				self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+				$a = new \Ypf\Core\Action($config['action'], array('worker_name' => $worker_name));
+				if(!$a->execute()) {
+					die ("execute : {$config['action']}        [ Fail ]\n");
+				}
 				$cron_queue = $this->shm->get("worker_cron_queue");
 				$cron_ready = $this->shm->get("worker_cron_ready");
 				unset($cron_ready[$worker_name]);
@@ -166,7 +170,10 @@ class Swoole extends Ypf {
 			$this->serverConfig['server']['worker_process_name'] : 'ypf:swoole-worker-%d';
 			$processName = sprintf("$name:%s", 0, $worker_name);
 			\swoole_set_process_name($processName);
-			self::getInstance()->disPatch($config['action'], array('worker_name' => $worker_name));
+			$a = new \Ypf\Core\Action($config['action'], array('worker_name' => $worker_name));
+			if($a->execute() instanceof \Exception) {
+				die ("execute : {$config['action']}        [ Fail ]\n");
+			}
 		}, false, false);
 		$process->useQueue();
 		$pid = $process->start();
