@@ -17,10 +17,11 @@ class Swoole extends Ypf {
 	private $worker_pid = [];
 	private $pidFile;
 	private $shm;
+	private static $isSpawnWorker;
 
 	public function setServerConfigIni($serverConfigIni) {
 		if (!is_file($serverConfigIni)) {
-			trigger_error('Server Config File Not Exist!', E_USER_ERROR);
+			trigger_error("Server Config File Not Exist: {$serverConfigIni}", E_USER_ERROR);
 		}
 		$serverConfig = parse_ini_file($serverConfigIni, true);
 		if (empty($serverConfig)) {
@@ -49,6 +50,7 @@ class Swoole extends Ypf {
 	}
 
 	public function start() {
+		self::$isSpawnWorker = false;
 		$this->shm = new \Ypf\Cache\Stores\Shm;
 		$listen = isset($this->serverConfig["server"]["listen"]) ?
 		$this->serverConfig["server"]["listen"] : self::LISTEN;
@@ -75,6 +77,7 @@ class Swoole extends Ypf {
 		$this->server->on('ManagerStop', [$this, 'onManagerStop']);
 		$this->server->on('WorkerStart', [$this, 'onWorkerStart']);
 		$this->server->on('WorkerStop', [$this, 'onWorkerStop']);
+		$this->server->on('WorkerError', [$this, 'onWorkerError']);
 		$this->server->on('Request', [$this, 'onRequest']);
 		$this->server->on('PipeMessage', [$this, 'onPipeMessage']);
 		$this->server->on('ShutDown', [$this, 'onShutDown']);
@@ -213,9 +216,9 @@ class Swoole extends Ypf {
 			$this->serverConfig['server']['task_worker_process_name'] : 'ypf:swoole-task-worker-%d';
 			$processName = sprintf($name, $worker_id);
 		} else {
-			if (!$worker_id) {
-				//swoole_timer_after(3000, [$this, "createCustomWorker"]);
+			if (!$worker_id && !self::$isSpawnWorker) {
 				$this->createCustomWorker();
+				self::$isSpawnWorker = false;
 			}
 			$name = isset($this->serverConfig['server']['worker_process_name']) ?
 			$this->serverConfig['server']['worker_process_name'] : 'ypf:swoole-worker-%d';
@@ -224,6 +227,10 @@ class Swoole extends Ypf {
 		\swoole_set_process_name($processName);
 
 		return true;
+	}
+
+	public function onWorkerError(\swoole_http_server $server, int $worker_id, int $worker_pid, int $exit_code, int $signal) {
+		error_log("workerError: $worker_id exit $exit_code", 3, $this->serverConfig['server']['log_file']);
 	}
 
 	public function onTask(\swoole_http_server $server, $task_id, $from_id, $data) {
@@ -269,6 +276,7 @@ class Swoole extends Ypf {
 
 	public function onShutDown(\swoole_http_server $server) {
 		@unlink($this->pidFile);
+		$this->shm->remove();
 		unset($this->shm);
 		return true;
 	}
