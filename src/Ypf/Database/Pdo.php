@@ -32,7 +32,7 @@ class Pdo {
 		$dsn = $options['dbtype'] . ':host=' . $options['host'] . ';dbname=' . $options['dbname'] . ';port=' . $options['port'];
 		switch($options['dbtype']) {
 			case 'pgsql':
-				$dns .= ';options=--client_encoding=\'' . $options['charset'] . '\'';
+				$dsn .= ';options=--client_encoding=\'' . $options['charset'] . '\'';
 		}
 		return $dsn;
 	}
