@@ -9,7 +9,7 @@
         "psr-0": {"Ypf": "src/"}
     },
 	"require": {
-		 "php" : ">=5.3.0",
+		 "php" : ">=7.0.0",
         "mtdowling/cron-expression": "^1.1"
     },
     "authors"    : [
