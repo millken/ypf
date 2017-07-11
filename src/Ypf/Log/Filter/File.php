@@ -17,7 +17,7 @@ class File extends Filter {
         if(file_exists($this->logFilePath) && !is_writable($this->logFilePath)) {
             throw new Exception('The file could not be written to. Check that appropriate permissions have been set.');
         }
-        $this->setFileHandle('a');
+        $this->setFileHandle('w+');
        	if ( ! $this->fileHandle) {
             throw new Exception('The file could not be opened. Check permissions.');
         }
