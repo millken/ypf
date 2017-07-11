@@ -12,14 +12,15 @@ class File extends Filter {
         'flushFrequency' => false,
     );
 
-	public function __construct($filepath, $option=[]) {
-       $this->setFile($filepath);
+	public function __construct(string $filepath, $option=[]) {
+       $this->logFilePath = $filepath;
+       $this->options += $option;
         if(file_exists($this->logFilePath) && !is_writable($this->logFilePath)) {
-            throw new Exception('The file could not be written to. Check that appropriate permissions have been set.');
+            throw new Exception("The file '{$this->logFilePath}' could not be written to. Check that appropriate permissions have been set.");
         }
-        $this->setFileHandle('w+');
+        $this->setFileHandle('a');
        	if ( ! $this->fileHandle) {
-            throw new Exception('The file could not be opened. Check permissions.');
+            throw new Exception("The file '{$this->logFilePath}' could not be opened. Check permissions.");
         }
 	}
 
@@ -39,10 +40,6 @@ class File extends Filter {
         }
 	}
 
-	public function setFile($filepath) {
-		$this->logFilePath = $filepath;
-	}
-
     public function setFileHandle($writeMode) {
         $this->fileHandle = fopen($this->logFilePath, $writeMode);
     }
@@ -53,3 +50,4 @@ class File extends Filter {
         }
     }
 }
+
