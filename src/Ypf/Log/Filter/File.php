@@ -15,8 +15,19 @@ class File extends Filter {
 	public function __construct(string $filepath, $option=[]) {
        $this->logFilePath = $filepath;
        $this->options += $option;
-        if(file_exists($this->logFilePath) && !is_writable($this->logFilePath)) {
-            throw new Exception("The file '{$this->logFilePath}' could not be written to. Check that appropriate permissions have been set.");
+       $this->logLineCount = 0;
+        if(file_exists($this->logFilePath)) {
+            if(is_writable($this->logFilePath)) {
+                $fp = fopen($this->logFilePath , 'r');  
+                if($fp){  
+                    while(stream_get_line($fp,8192,"\n")){  
+                        $this->logLineCount++;
+                    }
+                    fclose($fp);
+                }             
+            }else {
+                throw new Exception("The file '{$this->logFilePath}' could not be written to. Check that appropriate permissions have been set.");
+            }
         }
         $this->setFileHandle('a');
        	if ( ! $this->fileHandle) {
