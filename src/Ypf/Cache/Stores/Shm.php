@@ -41,6 +41,10 @@ class Shm implements CacheInterface {
 		}
 	}
 
+	public function del(string $key) {
+		return $this->delete($key);
+	}
+
 	public function delete(string $key) {
 		if ($this->has($key)) {
 			return shm_remove_var($this->shm, $this->shm_key($key));
