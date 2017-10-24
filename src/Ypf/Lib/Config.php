@@ -27,20 +27,20 @@ class Config {
                 $this->load($path);
             }
         }
-        self::$instances = &$this;
+        static::$instances = &$this;
     }
 
     public function load($path) {
         if (is_file($path)) {
-            return self::parseFile($path);
+            return static::parseFile($path);
         }elseif(!is_dir($path)){
             throw new \Exception(" config path '{$path}' not exist");
         }
 
         foreach (glob($path . '/*.conf') as $config_file) {
-            self::$path[] = $path;
+            static::$path[] = $path;
             $name = basename($config_file, '.conf');
-            self::$config[$name] = self::parseFile($config_file);
+            static::$config[$name] = static::parseFile($config_file);
         }
     }
     /**
@@ -57,13 +57,13 @@ class Config {
     }
 
     public static function getInstance() {
-        return self::$instances;
+        return static::$instances;
     }
 
     public static function set($uri, $data) {
         $levels = explode('.', $uri);
 
-        $pointer = &self::$config;
+        $pointer = &static::$config;
         for ($i = 0; $i < sizeof($levels); $i++) {
             if (!isset($pointer[$levels[$i]])) {
                 $pointer[$levels[$i]] = array();
@@ -81,7 +81,7 @@ class Config {
      * @return mixed
      */
     public static function get($uri) {
-        $node = self::$config;
+        $node = static::$config;
         $paths = explode('.', $uri);
         while (!empty($paths)) {
             $path = array_shift($paths);
@@ -98,7 +98,7 @@ class Config {
      * @return array
      */
     public static function getAll() {
-        return self::$config;
+        return static::$config;
     }
 
 }

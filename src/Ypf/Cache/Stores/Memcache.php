@@ -51,10 +51,10 @@ class Memcache implements CacheInterface {
      */
     protected function formatConfig(&$cf) {
         if (empty($cf['host'])) {
-            $cf['host'] = self::DEFAULT_HOST;
+            $cf['host'] = static::DEFAULT_HOST;
         }
         if (empty($cf['port'])) {
-            $cf['port'] = self::DEFAULT_PORT;
+            $cf['port'] = static::DEFAULT_PORT;
         }
         if (empty($cf['weight'])) {
             $cf['weight'] = 1;

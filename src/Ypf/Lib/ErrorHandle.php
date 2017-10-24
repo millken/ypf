@@ -20,11 +20,11 @@ class ErrorHandle {
         $function = isset($trace[0]['function']) ? $trace[0]['function'] : '';
 
         $error['message'] = $message;
-        $error['type'] = self::FriendlyErrorType($type);
+        $error['type'] = static::FriendlyErrorType($type);
 
         $error['file'] = $file;
         $error['line'] = $line;
-        $fileContent = self::getContextFileLineError($error['file'], $error['line']);
+        $fileContent = static::getContextFileLineError($error['file'], $error['line']);
         $fileContent = highlight_string("<?php \n" . $fileContent . "...*/", true);
         $error['detail'] = $fileContent;
         //ob_start();
@@ -64,7 +64,7 @@ class ErrorHandle {
         $error['message'] = $exception->getMessage();
         $error['type'] = get_class($exception);
 
-        $fileContent = self::getContextFileLineError($error['file'], $error['line']);
+        $fileContent = static::getContextFileLineError($error['file'], $error['line']);
         $fileContent = highlight_string("<?php \n" . $fileContent . "...*/", true);
         $error['detail'] = $fileContent;
         ob_clean();

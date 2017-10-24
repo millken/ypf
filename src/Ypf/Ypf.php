@@ -95,7 +95,7 @@ class Ypf {
     }
 
     public function setDefaultAction($action, $args = []) {
-        $this->default_action = self::action($action, $args);
+        $this->default_action = static::action($action, $args);
     }
 
     private static function action($action, $args = []) {

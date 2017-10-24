@@ -4,7 +4,6 @@ namespace Ypf\Database;
 
 class Pdo {
     static $option = [];
-    protected $options = [];
     protected $params = [];
     protected $lastsql = "";
     protected $dsn, $pdo;
@@ -24,10 +23,10 @@ class Pdo {
             'timeout' => 3,
             'presistent' => false,
         );
-        self::$option = array_merge($default_options, $options);
-        $this->dsn = $options['dbtype'] . ':host=' . self::$option['host'] . ';dbname=' . self::$option['dbname'] . ';port=' . self::$option['port'];
-		if (self::$option['dbtype'] == 'pgsql') {
-			$this->dsn .= ';options=--client_encoding=\'' . self::$options['charset'] . '\'';
+        static::$option = array_merge($default_options, $options);
+        $this->dsn = $options['dbtype'] . ':host=' . static::$option['host'] . ';dbname=' . static::$option['dbname'] . ';port=' . static::$option['port'];
+		if (static::$option['dbtype'] == 'pgsql') {
+			$this->dsn .= ';options=--client_encoding=\'' . static::$option['charset'] . '\'';
 		}
     }
 
@@ -37,14 +36,8 @@ class Pdo {
             try {
                 @$this->connection()->getAttribute(\PDO::ATTR_SERVER_INFO);
             } catch (\PDOException $e) {
-                switch(self::$option['dbtype']) {
-                    case 'mysql':
-                        if ($e->getCode() != 'HY000' || !stristr($e->getMessage(), 'server has gone away')) {
-                            throw $e;
-                        }
-                    break;
-                    default:
-                    break;
+                if (static::$option['dbtype'] == 'mysql' && $e->getCode() != 'HY000' || !stristr($e->getMessage(), 'server has gone away')) {
+					throw $e;
                 }
 
                 $this->reconnect();
@@ -93,14 +86,14 @@ class Pdo {
 
     public function connect() {
         try {
-            $option =  self::$option['dbtype'] == "mysql" && self::$option['charset'] ?
-             array(\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . self::$option['charset']) : [];
-            $option[\PDO::ATTR_TIMEOUT] = self::$option['timeout'];
-            $option[\PDO::ATTR_PERSISTENT] = self::$option['presistent'];
+            $option =  static::$option['dbtype'] == "mysql" && static::$option['charset'] ?
+             array(\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . static::$option['charset']) : [];
+            $option[\PDO::ATTR_TIMEOUT] = static::$option['timeout'];
+            $option[\PDO::ATTR_PERSISTENT] = static::$option['presistent'];
             $this->pdo = new \PDO(
                 $this->dsn,
-                self::$option['username'],
-                self::$option['password'],
+                static::$option['username'],
+                static::$option['password'],
                 $option
             );
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -157,13 +150,10 @@ class Pdo {
 
     public function lastInsertId($name = 'id') {
         $id = false;
-        switch(self::$option['dbtype']) {
-            case 'pgsql':
-                $id = $this->pdo->lastInsertId($name);
-            break;
-            default:    
-                $id = $this->pdo->lastInsertId();
-            break;
+        if (static::$option['dbtype'] == 'pgsql') {
+            $id = $this->pdo->lastInsertId($name);
+		}else{  
+            $id = $this->pdo->lastInsertId();
         }
         return $id;
     }
@@ -176,7 +166,7 @@ class Pdo {
         if (!isset($this->options['type'])) {
             $this->options['type'] = isset($this->options['where']) ? 'UPDATE' : 'INSERT';
         }
-        $identifier = self::$option['dbtype'] == "mysql" ? "`" : "" ;
+        $identifier = static::$option['dbtype'] == "mysql" ? "`" : "" ;
 
         switch ($this->options['type']) {
         case 'INSERT':

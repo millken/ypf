@@ -69,16 +69,17 @@ class Lrucache implements CacheInterface {
     }
 
     protected function isExpire($key) {
+		$result = false;
         if (!isset($this->data[$key]) || !isset($this->data[$key]['expire'])) {
-            return false;
+            $result = false;
         }
         $expire = $this->data[$key]['expire'];
         if ($expire < 0) {
-            return false;
+            $result = false;
         } elseif (time() >= $expire) {
-            return true;
+            $result = true;
         }
-        return false;
+        return $result;
     }
 
     protected function changeKeyToLastUsed($key, $value) {

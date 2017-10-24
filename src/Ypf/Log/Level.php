@@ -23,12 +23,12 @@ class Level {
         );
 
     public static function addLevel($name) {
-        if(!in_array($name, self::$loggerLevel)) {
-            self::$loggerLevel[] = $name;
+        if(!in_array($name, static::$loggerLevel)) {
+            static::$loggerLevel[] = $name;
         }
     }
 
     public static function getLevels() {
-        return self::$loggerLevel;
+        return static::$loggerLevel;
     }
 }
