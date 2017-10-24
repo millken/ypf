@@ -4,98 +4,98 @@ namespace Ypf\Lib;
 
 class Load {
 
-	private static $base = '';
+    private static $base = '';
 
-	public function __construct($base = '') {
-		self::$base = $base;
-	}
+    public function __construct($base = '') {
+        self::$base = $base;
+    }
 
-	public function library($library, $params = NULL, $object_name = NULL) {
-		if (empty($library)) {
-			return $this;
-		} elseif (is_array($library)) {
-			foreach ($library as $key => $value) {
-				if (is_int($key)) {
-					$this->library($value, $params);
-				} else {
-					$this->library($key, $params, $value);
-				}
-			}
+    public function library($library, $params = NULL, $object_name = NULL) {
+        if (empty($library)) {
+            return $this;
+        } elseif (is_array($library)) {
+            foreach ($library as $key => $value) {
+                if (is_int($key)) {
+                    $this->library($value, $params);
+                } else {
+                    $this->library($key, $params, $value);
+                }
+            }
 
-			return $this;
-		}
+            return $this;
+        }
 
-		$this->load_class($library, $params, $object_name);
-		return $this;
-	}
+        $this->load_class($library, $params, $object_name);
+        return $this;
+    }
 
-	public function helper() {
-		$args = func_get_args();
+    public function helper() {
+        $args = func_get_args();
 
-		if (func_num_args() == 1 && is_array($args[0])) {
-			$helpers = $args[0];
-		} else {
-			$helpers = $args;
-		}
-		foreach ($helpers as $helper) {
-			$helper = str_replace('.php', '', trim($helper, '/'));
-			$file = self::$base . '/Helper/' . $helper . '.php';
-			if (!is_file($file)) {
-				trigger_error('Unable to load the helper file: ' . $file);
-			}
+        if (func_num_args() == 1 && is_array($args[0])) {
+            $helpers = $args[0];
+        } else {
+            $helpers = $args;
+        }
+        foreach ($helpers as $helper) {
+            $helper = str_replace('.php', '', trim($helper, '/'));
+            $file = self::$base . '/Helper/' . $helper . '.php';
+            if (!is_file($file)) {
+                trigger_error('Unable to load the helper file: ' . $file);
+            }
 
-			include_once $file;
-		}
-	}
+            include_once $file;
+        }
+    }
 
-	public function file($file) {
-		$files = array(
-			self::$base . $file,
-			$file,
-		);
-		foreach ($files as $f) {
-			if (is_file($f)) {
-				include_once $f;
-				break;
-			}
-		}
-	}
+    public function file($file) {
+        $files = array(
+            self::$base . $file,
+            $file,
+        );
+        foreach ($files as $f) {
+            if (is_file($f)) {
+                include_once $f;
+                break;
+            }
+        }
+    }
 
-	protected function load_class($class, $params = NULL, $object_name = NULL) {
-		// Get the class name, and while we're at it trim any slashes.
-		// The directory path can be included as part of the class name,
-		// but we don't want a leading slash
-		$class = str_replace('.php', '', trim($class, '/'));
+    protected function load_class($class, $params = NULL, $object_name = NULL) {
+        // Get the class name, and while we're at it trim any slashes.
+        // The directory path can be included as part of the class name,
+        // but we don't want a leading slash
+        $class = str_replace('.php', '', trim($class, '/'));
 
-		// Was the path included with the class name?
-		// We look for a slash to determine this
-		if (($last_slash = strrpos($class, '/')) !== FALSE) {
-			// Extract the path
-			$subdir = substr($class, 0, ++$last_slash);
+        // Was the path included with the class name?
+        // We look for a slash to determine this
+        if (($last_slash = strrpos($class, '/')) !== FALSE) {
+            // Extract the path
+            $subdir = substr($class, 0, ++$last_slash);
 
-			// Get the filename from the path
-			$class = substr($class, $last_slash);
-		} else {
-			$subdir = '';
-		}
+            // Get the filename from the path
+            $class = substr($class, $last_slash);
+        } else {
+            $subdir = '';
+        }
 
-		$class = ucfirst($class);
-		$subclass = self::$base . '/Library/' . $subdir . $class . '.php';
-		include_once $subclass;
+        $class = ucfirst($class);
+        $subclass = self::$base . '/Library/' . $subdir . $class . '.php';
+        include_once $subclass;
 
-		if (empty($object_name)) {
-			$object_name = strtolower($class);
-		}
+        if (empty($object_name)) {
+            $object_name = strtolower($class);
+        }
 
-		// Don't overwrite existing properties
-		$ypf = \Ypf\Ypf::getInstance();
-		if (isset($ypf->$object_name)) {
-			trigger_error("Resource '" . $object_name . "' already exists and is not a " . $class . " instance.");
-		}
+        // Don't overwrite existing properties
+        $ypf = \Ypf\Ypf::getInstance();
+        if (isset($ypf->$object_name)) {
+            trigger_error("Resource '" . $object_name . "' already exists and is not a " . $class . " instance.");
+        }
 
-		// Instantiate the class
-		$ypf->$object_name = isset($params)
-		? new $class($params)
-		: new $class();
-	}
+        // Instantiate the class
+        $ypf->$object_name = isset($params)
+        ? new $class($params)
+        : new $class();
+    }
 }

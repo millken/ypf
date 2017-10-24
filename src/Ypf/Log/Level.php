@@ -12,23 +12,23 @@ class Level {
     const ALL       = 'all';
     
     protected static $loggerLevel = array(
-    	self::EMERGENCY,
-    	self::ALERT,
-    	self::CRITICAL,
-    	self::ERROR,
-    	self::WARNING,
-    	self::NOTICE,
-    	self::INFO,
-    	self::DEBUG
-    	);
+        self::EMERGENCY,
+        self::ALERT,
+        self::CRITICAL,
+        self::ERROR,
+        self::WARNING,
+        self::NOTICE,
+        self::INFO,
+        self::DEBUG
+        );
 
     public static function addLevel($name) {
-    	if(!in_array($name, self::$loggerLevel)) {
-    		self::$loggerLevel[] = $name;
-    	}
+        if(!in_array($name, self::$loggerLevel)) {
+            self::$loggerLevel[] = $name;
+        }
     }
 
     public static function getLevels() {
-    	return self::$loggerLevel;
+        return self::$loggerLevel;
     }
 }

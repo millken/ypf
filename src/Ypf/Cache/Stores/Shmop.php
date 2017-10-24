@@ -10,9 +10,9 @@ class Shmop implements CacheInterface {
     protected $changed = false;
 
     public function __construct($id = null, $startSize = 10240) {
-		if (function_exists("shmop_open") === FALSE) {
-			die("\nTo use shmop you will need to compile PHP with the --enable-shmop parameter in your configure line.\n");
-		}
+        if (function_exists("shmop_open") === FALSE) {
+            die("\nTo use shmop you will need to compile PHP with the --enable-shmop parameter in your configure line.\n");
+        }
 
         $this->id = $id ?? ftok(__FILE__, 't');
         $this->res = shmop_open($id, 'c', 0644, $startSize);
