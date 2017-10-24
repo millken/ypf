@@ -25,7 +25,7 @@ abstract class View {
     }
 
     public function fetch(string $template, bool $display = false) {
-        foreach ($this->template_dir as $key => $dir) {
+        foreach ($this->template_dir as $dir) {
 
             $template_file = $this->base_dir . $dir . $template;
 

@@ -22,7 +22,7 @@ class Thread {
         \Ypf\Swoole::getInstance()->getTable()->set($key, $data);
 
         for ($i = 0; $i < $data['tasks']; $i++) {
-            self::add($func, [$args[$i]], null, ['task' => $key, 'id' => $i]);
+            static::add($func, [$args[$i]], null, ['task' => $key, 'id' => $i]);
         }
         $n = 1;
         while (isset($data['tasks']) && $data["tasks"] > 0) {

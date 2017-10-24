@@ -54,12 +54,12 @@ class Swoole extends Ypf {
     }
 
     public function start() {
-        self::$isSpawnWorker = false;
+        static::$isSpawnWorker = false;
         $this->table = new \Ypf\Cache\Stores\Table(1024);
         $listen = isset($this->serverConfig["server"]["listen"]) ?
-        $this->serverConfig["server"]["listen"] : self::LISTEN;
+        $this->serverConfig["server"]["listen"] : static::LISTEN;
         $mode = isset($this->serverConfig["server"]["mode"]) ?
-        $this->serverConfig["server"]["mode"] : self::MODE;
+        $this->serverConfig["server"]["mode"] : static::MODE;
         if ($mode == 'process') {
             $swoole_mode = SWOOLE_PROCESS;
         }else{
@@ -144,7 +144,7 @@ class Swoole extends Ypf {
     }
 
     private function spawnCrontabWorker($config) {
-        $process = new \swoole_process(function (\swoole_process $worker) use ($config) {
+        $process = new \swoole_process(function () use ($config) {
             foreach ($config as $k => $v) {
                 if (!$v["status"] || !isset($v["crontab"])) {
                     unset($config[$k]);
@@ -160,9 +160,9 @@ class Swoole extends Ypf {
 
         $this->worker_pid[] = $pid;
         if ($pid > 0) {
-            echo ("starting cron worker     [ OK ]\n");
+            echo "starting cron worker     [ OK ]\n";
         } else {
-            echo ("starting cron worker     [ FAIL ]  '" . \swoole_strerror(swoole_errno()) . "' \n");
+            echo "starting cron worker     [ FAIL ]  '" . \swoole_strerror(swoole_errno()) . "' \n";
         }
     }
 
@@ -187,9 +187,9 @@ class Swoole extends Ypf {
         $process->push(serialize(array('pid' => $pid, 'worker_name' => $worker_name, 'config' => $config)));
 
         if ($pid > 0) {
-            echo ("starting worker : $worker_name        [ OK ]\n");
+            echo "starting worker : $worker_name        [ OK ]\n";
         } else {
-            echo ("starting worker : $worker_name        [ FAIL ]  '" . \swoole_strerror(swoole_errno()) . "' \n");
+            echo "starting worker : $worker_name        [ FAIL ]  '" . \swoole_strerror(swoole_errno()) . "' \n";
         }
     }
 
@@ -219,9 +219,9 @@ class Swoole extends Ypf {
             $this->serverConfig['server']['task_worker_process_name'] : 'ypf:swoole-task-worker-%d';
             $processName = sprintf($name, $worker_id);
         } else {
-            if (!$worker_id && !self::$isSpawnWorker) {
+            if (!$worker_id && !static::$isSpawnWorker) {
                 $this->createCustomWorker();
-                self::$isSpawnWorker = false;
+                static::$isSpawnWorker = false;
             }
             $name = isset($this->serverConfig['server']['worker_process_name']) ?
             $this->serverConfig['server']['worker_process_name'] : 'ypf:swoole-worker-%d';

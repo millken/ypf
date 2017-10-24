@@ -8,7 +8,7 @@ class Master {
     protected static $regex = "/%(?P<word>[a-zA-Z]+)(?P<option>{[^}]*})?/";
     public function addFilter($logLevels, $filter, $layout = null) {
         if (is_object($filter) && is_subclass_of($filter, "\\Ypf\\Log\\Filter\\Filter")) {
-            self::$filters[] = array(
+            static::$filters[] = array(
                 'levels' => $logLevels,
                 'filter' => $filter,
                 'layout' => $this->parseLayout($layout),
@@ -26,8 +26,8 @@ class Master {
          * %p   level
     */
     protected static function parseLayout($layout) {
-        $layout = is_null($layout) ? self::$defaultLayout : $layout;
-        $count = preg_match_all(self::$regex, $layout, $matches, PREG_OFFSET_CAPTURE);
+        $layout = is_null($layout) ? static::$defaultLayout : $layout;
+        $count = preg_match_all(static::$regex, $layout, $matches, PREG_OFFSET_CAPTURE);
         if ($count === false) {
             $error = error_get_last();
             throw new Exception("Failed parsing layotut pattern: {$error['message']}");
@@ -85,7 +85,7 @@ class Master {
     }
 
     public function __call($level, $value) {
-        array_walk(self::$filters, function ($filters) use ($value, $level) {
+        array_walk(static::$filters, function ($filters) use ($value, $level) {
             $catch = false;
             if (is_string($filters['levels']) && ($filters['levels'] == Level::ALL
                 || $filters['levels'] == $level)) {

@@ -7,7 +7,7 @@ class Load {
     private static $base = '';
 
     public function __construct($base = '') {
-        self::$base = $base;
+        static::$base = $base;
     }
 
     public function library($library, $params = NULL, $object_name = NULL) {
@@ -39,7 +39,7 @@ class Load {
         }
         foreach ($helpers as $helper) {
             $helper = str_replace('.php', '', trim($helper, '/'));
-            $file = self::$base . '/Helper/' . $helper . '.php';
+            $file = static::$base . '/Helper/' . $helper . '.php';
             if (!is_file($file)) {
                 trigger_error('Unable to load the helper file: ' . $file);
             }
@@ -50,7 +50,7 @@ class Load {
 
     public function file($file) {
         $files = array(
-            self::$base . $file,
+            static::$base . $file,
             $file,
         );
         foreach ($files as $f) {
@@ -71,7 +71,7 @@ class Load {
         // We look for a slash to determine this
         if (($last_slash = strrpos($class, '/')) !== FALSE) {
             // Extract the path
-            $subdir = substr($class, 0, ++$last_slash);
+            $subdir = substr($class, 0, $last_slash + 1);
 
             // Get the filename from the path
             $class = substr($class, $last_slash);
@@ -80,7 +80,7 @@ class Load {
         }
 
         $class = ucfirst($class);
-        $subclass = self::$base . '/Library/' . $subdir . $class . '.php';
+        $subclass = static::$base . '/Library/' . $subdir . $class . '.php';
         include_once $subclass;
 
         if (empty($object_name)) {

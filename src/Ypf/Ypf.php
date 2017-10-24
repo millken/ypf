@@ -28,7 +28,7 @@ class Ypf {
         if (substr(trim($className, '\\'), 0, strlen($thisClass)) === $thisClass) {
             $baseDir = substr($baseDir, 0, -strlen($thisClass));
         } else {
-            $baseDir = self::$services['root'];
+            $baseDir = static::$services['root'];
         }
         $baseDir .= '/';
         $className = ltrim($className, '\\');
@@ -47,23 +47,23 @@ class Ypf {
     }
 
     public function __construct(array $services = []) {
-        self::$services = $services;
+        static::$services = $services;
 
         spl_autoload_register(__NAMESPACE__ . "\\Ypf::autoload");
 
         if ($this->has('time_zone')) {
-            date_default_timezone_set(self::$services['time_zone']);
+            date_default_timezone_set(static::$services['time_zone']);
         }
 
         if ($this->has('friendly_error') && PHP_SAPI !== 'cli') {
-            self::registerErrorHandle();
+            static::registerErrorHandle();
         }
 
-        self::$instances = &$this;
+        static::$instances = &$this;
     }
 
     public function has($name) {
-        return isset(self::$services[$name]);
+        return isset(static::$services[$name]);
     }
 
     public static function registerErrorHandle() {
@@ -75,22 +75,22 @@ class Ypf {
     }
 
     public static function &getInstance() {
-        return self::$instances;
+        return static::$instances;
     }
 
     public static function &getContainer() {
-        return self::$instances->container;
+        return static::$instances->container;
     }
 
     public function addBeforeAction($action, $args = []) {
 
-        $this->before_action[] = self::action($action, $args);
+        $this->before_action[] = static::action($action, $args);
         return $this;
     }
 
     public function addAfterAction($action, $args = []) {
 
-        $this->after_action[] = self::action($action, $args);
+        $this->after_action[] = static::action($action, $args);
         return $this;
     }
 
@@ -146,7 +146,7 @@ class Ypf {
     }
 
     private function createService($name) {
-        $entry = self::$services[$name];
+        $entry = static::$services[$name];
         if (!is_array($entry) || !isset($entry['class'])) {
             throw new Exception($name . ' service entry must be an array containing a \'class\' key');
         } elseif (!class_exists($entry['class'])) {
@@ -202,7 +202,7 @@ class Ypf {
         if (isset($this->container[$name])) {
             return $this->container[$name];
         }
-        if (!isset(self::$services[$name])) {
+        if (!isset(static::$services[$name])) {
             throw new Exception('Service not found: ' . $name);
         }
         $this->container[$name] = $this->createService($name);
