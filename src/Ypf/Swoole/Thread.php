@@ -2,13 +2,8 @@
 namespace Ypf\Swoole;
 
 class Thread {
-	private $shm;
 
-	public function __construct() {
-		$this->shm = new \Ypf\Cache\Stores\Shm;
-	}
-
-	public function add($func, $args = [], $callback = null, $thread = []) {
+	public static function add($func, $args = [], $callback = null, $thread = []) {
 
 		$data = [
 			'func' => $func,
@@ -19,19 +14,19 @@ class Thread {
 		\Ypf\Swoole::getInstance()->getServer()->sendMessage(serialize($data), 0);
 	}
 
-	public function block($func, $args = [], $timeout = 7000) {
+	public static function block($func, $args = [], $timeout = 7000) {
 		$key = uniqid("ypf");
 		$total = count($args);
 		$data = [];
 		$data['tasks'] = $total;
-		$this->shm->set($key, $data);
+		\Ypf\Swoole::getInstance()->getTable()->set($key, $data);
 
 		for ($i = 0; $i < $data['tasks']; $i++) {
-			$this->add($func, [$args[$i]], null, ['task' => $key, 'id' => $i]);
+			self::add($func, [$args[$i]], null, ['task' => $key, 'id' => $i]);
 		}
 		$n = 1;
 		while (isset($data['tasks']) && $data["tasks"] > 0) {
-			$result = $this->shm->get($key);
+			$result = \Ypf\Swoole::getInstance()->getTable()->get($key);
 			$data = $result ? $result : ['tasks' => 0];
 			$time = 200000 * $n++;
 			if (($timeout * 1000) < $time) {
@@ -41,7 +36,7 @@ class Thread {
 			usleep(200000);
 		}
 		$result = isset($data['results']) ? $data['results'] : false;
-		$this->shm->del($key);
+		\Ypf\Swoole::getInstance()->getTable()->delete($key);
 		return $result;
 	}
 

@@ -12,7 +12,7 @@ use Ypf\Reference\ServiceReference;
 define("__YPF__", __DIR__);
 
 class Ypf {
-	const VERSION = '1.2.0';
+	const VERSION = '1.3.0';
 
 	private $container = [];
 
@@ -42,7 +42,7 @@ class Ypf {
 			$fileName .= str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
 		}
 		$fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
-		//echo $fileName . "\n\n";
+
 		if (file_exists($fileName)) {
 			require $fileName;
 		}

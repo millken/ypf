@@ -16,7 +16,7 @@ class Swoole extends Ypf {
 	public $server;
 	private $worker_pid = [];
 	private $pidFile;
-	private $shm;
+	private $table;
 	private static $isSpawnWorker;
 
 	public function setServerConfigIni($serverConfigIni) {
@@ -49,9 +49,13 @@ class Swoole extends Ypf {
 		return $this->server;
 	}
 
+	public function &getTable() {
+		return $this->table;
+	}
+
 	public function start() {
 		self::$isSpawnWorker = false;
-		$this->shm = new \Ypf\Cache\Stores\Shm;
+		$this->table = new \Ypf\Cache\Stores\Table(1024);
 		$listen = isset($this->serverConfig["server"]["listen"]) ?
 		$this->serverConfig["server"]["listen"] : self::LISTEN;
 		$mode = isset($this->serverConfig["server"]["mode"]) ?
@@ -97,12 +101,12 @@ class Swoole extends Ypf {
 			$this->spawnCustomWorker($worker_name, $config);
 		}
 		$this->spawnCrontabWorker($this->workerConfig);
-		$this->shm->set('worker_pid', $this->worker_pid);
+		$this->table->set('worker_pid', $this->worker_pid);
 	}
 
 	public function crontabWorker() {
-		$cron_queue = $this->shm->get("worker_cron_queue");
-		$cron_ready = $this->shm->get("worker_cron_ready");
+		$cron_queue = $this->table->get("worker_cron_queue");
+		$cron_ready = $this->table->get("worker_cron_ready");
 
 		if (empty($cron_queue)) {
 			return;
@@ -126,18 +130,18 @@ class Swoole extends Ypf {
 				if(!$a->execute()) {
 					die ("execute : {$config['action']}        [ Fail ]\n");
 				}
-				$cron_queue = $this->shm->get("worker_cron_queue");
-				$cron_ready = $this->shm->get("worker_cron_ready");
+				$cron_queue = $this->table->get("worker_cron_queue");
+				$cron_ready = $this->table->get("worker_cron_ready");
 				unset($cron_ready[$worker_name]);
 				$cron_queue[$worker_name] = $config;
-				$this->shm->set("worker_cron_queue", $cron_queue);
-				$this->shm->set("worker_cron_ready", $cron_ready);
+				$this->table->set("worker_cron_queue", $cron_queue);
+				$this->table->set("worker_cron_ready", $cron_ready);
 			});
 			unset($cron_queue[$worker_name]);
 			$cron_ready[$worker_name] = $config;
 		}
-		$this->shm->set("worker_cron_queue", $cron_queue);
-		$this->shm->set("worker_cron_ready", $cron_ready);
+		$this->table->set("worker_cron_queue", $cron_queue);
+		$this->table->set("worker_cron_ready", $cron_ready);
 	}
 
 	private function spawnCrontabWorker($config) {
@@ -147,7 +151,7 @@ class Swoole extends Ypf {
 					unset($config[$k]);
 				}
 			}
-			$this->shm->set("worker_cron_queue", $config);
+			$this->table->set("worker_cron_queue", $config);
 			\swoole_timer_tick(1000, [$this, 'crontabWorker']);
 			$processName = isset($this->serverConfig['server']['cron_worker_process_name']) ?
 			$this->serverConfig['server']['cron_worker_process_name'] : 'ypf:swoole-cron-worker';
@@ -244,7 +248,7 @@ class Swoole extends Ypf {
 	public function onFinish(\swoole_http_server $server, $task_id, $data) {
 		if (!empty($data['thread'])) {
 			$key = $data['thread']['task'];
-			$value = $this->shm->get($key);
+			$value = $this->table->get($key);
 			if (!$value) {
 				return;
 			}
@@ -252,7 +256,7 @@ class Swoole extends Ypf {
 			$value['results'][$data['thread']['id']] = $data['result'];
 			$value['tasks'] -= 1;
 
-			$this->shm->set($key, $value);
+			$this->table->set($key, $value);
 		}
 		//echo sprintf("pid = %d fnish = %s, value = %s\n",getmypid(), print_r($data, true), print_r($value, true));
 		if ($data['callback']) {
@@ -265,19 +269,17 @@ class Swoole extends Ypf {
 		if ($worker_id) {
 			return true;
 		}
-		$worker_pids = $this->shm->get('worker_pid');
+		$worker_pids = $this->table->get('worker_pid');
 		foreach ($worker_pids as $worker_pid) {
 			\swoole_process::kill($worker_pid, 9);
 		}
-		$this->shm->del("worker_pid");
+		$this->table->del("worker_pid");
 
 		return true;
 	}
 
 	public function onShutDown(\swoole_http_server $server) {
 		@unlink($this->pidFile);
-		$this->shm->remove();
-		unset($this->shm);
 		return true;
 	}
 
