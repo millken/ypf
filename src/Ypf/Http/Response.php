@@ -31,7 +31,7 @@ final class Response {
     );
 
     public function __construct() {
-        self::$instances = &$this;
+        self::$instances = $this;
         self::$mimes = array_flip(self::$mimes);
     }
 
@@ -89,7 +89,7 @@ final class Response {
         if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip') !== false)) {
             $encoding = 'x-gzip';
         }
-
+ 
         if (!isset($encoding)) {
             return $data;
         }
@@ -134,6 +134,10 @@ final class Response {
     }
 
     private function output_swoole() {
+        global $_HEADER;
+        if (!isset($_HEADER['accept-encoding']) || (strpos($_HEADER['accept-encoding'], 'gzip') === false)) {
+            $this->level = 0;
+        }
 
         if ($this->output != '') {
             if ($this->level) {

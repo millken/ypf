@@ -59,7 +59,7 @@ class Ypf {
             static::registerErrorHandle();
         }
 
-        static::$instances = &$this;
+        static::$instances = $this;
     }
 
     public function has($name) {
