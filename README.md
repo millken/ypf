@@ -18,7 +18,7 @@ php index.php start|stop|reload|restart|kill
 
 ## License
 
-[GNU General Public License version 3 (GPLv3)](https://github.com/millken/ypf/blob/master/license.txt)
+[Apache License, Version 2.0](https://github.com/millken/ypf/blob/master/license.txt)
 
 ## Link
 
