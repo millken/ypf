@@ -4,7 +4,7 @@
     "type"       : "library",
     "keywords"   : ["library", "webserver", "framework"],
     "homepage"   : "https://github.com/millken/ypf/",
-    "license"    : "LGPL",
+    "license"    : "Apache-2.0",
     "autoload": {
         "psr-0": {"Ypf": "src/"}
     },
