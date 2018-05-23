@@ -16,8 +16,8 @@ class Ypf {
 
     protected static $services = [];
 
-    private $before_action = [];
-    private $after_action = [];
+    private $pre_action = [];
+    private $post_action = [];
     private $default_action = null;
 
     protected static $instances = null;
@@ -59,6 +59,30 @@ class Ypf {
             static::registerErrorHandle();
         }
 
+        if ($this->has('default_action')) {
+            $this->default_action = static::action(static::$services['default_action'], []);
+        }
+
+        if ($this->has('pre_action')) {
+            foreach(static::$services['pre_action'] as $action) {
+                if(is_array($action)) {
+                    list($action, $args) = $action;
+                    $this->pre_action[] = static::action($action, $args);
+                }else{
+                    $this->pre_action[] = static::action($action, []);
+                }
+            }
+        }
+        if ($this->has('post_action')) {
+            foreach(static::$services['post_action'] as $action) {
+                if(is_array($action)) {
+                    list($action, $args) = $action;
+                    $this->post_action[] = static::action($action, $args);
+                }else{
+                    $this->post_action[] = static::action($action, []);
+                }
+            }
+        }
         static::$instances = $this;
     }
 
@@ -84,13 +108,13 @@ class Ypf {
 
     public function addBeforeAction($action, $args = []) {
 
-        $this->before_action[] = static::action($action, $args);
+        $this->pre_action[] = static::action($action, $args);
         return $this;
     }
 
     public function addAfterAction($action, $args = []) {
 
-        $this->after_action[] = static::action($action, $args);
+        $this->post_action[] = static::action($action, $args);
         return $this;
     }
 
@@ -127,8 +151,8 @@ class Ypf {
 
     public function disPatch() {
         $action = $this->default_action;
-        foreach ($this->before_action as $before_action) {
-            $result = $this->execute($before_action);
+        foreach ($this->pre_action as $pre_action) {
+            $result = $this->execute($pre_action);
 
             if ($result instanceof Action) {
                 $action = $result;
@@ -140,8 +164,8 @@ class Ypf {
             $action = $this->execute($action);
         }
 
-        foreach ($this->after_action as $after_action) {
-            $this->execute($after_action);
+        foreach ($this->post_action as $post_action) {
+            $this->execute($post_action);
         }
     }
 

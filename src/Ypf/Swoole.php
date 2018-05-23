@@ -72,6 +72,14 @@ class Swoole extends Ypf {
             $this->server->addlistener($ssl_addr, $ssl_port, SWOOLE_TCP | SWOOLE_SSL);
         }
         isset($this->serverConfig['swoole']) && $this->server->set($this->serverConfig['swoole']);
+        
+        if (isset($this->serverConfig["server"]["user"])) {
+            $user = posix_getpwnam($this->serverConfig["server"]["user"]);
+            if ($user) {
+                posix_setuid($user['uid']);
+                posix_setgid($user['gid']);
+            }
+        }
 
         $this->server->on('Task', [$this, 'onTask']);
         $this->server->on('Finish', [$this, 'onFinish']);
