@@ -9,7 +9,7 @@ final class Request {
     public $files = [];
     public $server = [];
     public $header = [];
-    public $rawContent = null;
+    private $swoole_http_request = null;
 
     public function __construct() {
         $this->get = $this->clean($_GET);
@@ -30,14 +30,13 @@ final class Request {
             $_POST = $this->post = isset($request->post) ? $request->post : [];
             $_COOKIE = $this->cookie = isset($request->cookie) ? $request->cookie : [];
             $_FILES = $this->files = isset($request->files) ? $request->files : [];
-            $this->rawContent = $request->rawContent();
-        }else{
-            $this->rawContent = file_get_contents("php://input");
+            $this->swoole_http_request = $request;
         }
     }
 
-    public function rawContent(){
-        return $this->rawContent;
+    public function rawContent() {
+        return !defined("SWOOLE_SERVER") ? file_get_contents("php://input")
+        : $this->swoole_http_request->rawContent();
     }
 
     public function clean($data) {
