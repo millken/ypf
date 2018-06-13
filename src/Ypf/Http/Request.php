@@ -31,6 +31,8 @@ final class Request {
             $_COOKIE = $this->cookie = isset($request->cookie) ? $request->cookie : [];
             $_FILES = $this->files = isset($request->files) ? $request->files : [];
             $this->rawContent = $request->rawContent();
+        }else{
+            $this->rawContent = file_get_contents("php://input");
         }
     }
 
