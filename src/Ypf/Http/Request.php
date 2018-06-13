@@ -9,6 +9,7 @@ final class Request {
     public $files = [];
     public $server = [];
     public $header = [];
+    public $rawContent = null;
 
     public function __construct() {
         $this->get = $this->clean($_GET);
@@ -29,7 +30,12 @@ final class Request {
             $_POST = $this->post = isset($request->post) ? $request->post : [];
             $_COOKIE = $this->cookie = isset($request->cookie) ? $request->cookie : [];
             $_FILES = $this->files = isset($request->files) ? $request->files : [];
+            $this->rawContent = $request->rawContent();
         }
+    }
+
+    public function rawContent(){
+        return $this->rawContent;
     }
 
     public function clean($data) {
