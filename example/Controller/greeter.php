@@ -9,7 +9,6 @@ use Ypf\Controller\RestController;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\stream_for;
 
 class Greeter extends RestController
 {
@@ -24,7 +23,7 @@ class Greeter extends RestController
         $headers['content-type'] = 'application/json';
         $payload = json_encode($result);
 
-        return new Response(200, $headers, stream_for($payload));
+        return new Response(200, $headers, $payload);
     }
 
     public function put(ServerRequestInterface $request, RequestHandlerInterface $requestHandler)
