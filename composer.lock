@@ -1,11 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "hash": "da0eba9ba1f6fef9e2339a4c0140cc63",
-    "content-hash": "1bd1a0dbf7fddb9f1e4e296f2cf9ebf9",
+    "content-hash": "dbfd04b751ecc004380e652c00eba960",
     "packages": [
         {
             "name": "guzzlehttp/psr7",
@@ -71,7 +70,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2018-06-08 08:55:26"
+            "time": "2018-06-08T08:55:26+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -149,7 +148,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2018-06-19 07:22:34"
+            "time": "2018-06-19T07:22:34+00:00"
         },
         {
             "name": "mtdowling/cron-expression",
@@ -193,7 +192,7 @@
                 "cron",
                 "schedule"
             ],
-            "time": "2017-01-23 04:29:33"
+            "time": "2017-01-23T04:29:33+00:00"
         },
         {
             "name": "psr/container",
@@ -242,7 +241,7 @@
                 "container-interop",
                 "psr"
             ],
-            "time": "2017-06-28 15:35:32"
+            "time": "2017-06-28T15:35:32+00:00"
         },
         {
             "name": "psr/http-message",
@@ -292,7 +291,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-06 14:39:51"
+            "time": "2016-08-06T14:39:51+00:00"
         },
         {
             "name": "psr/http-server-handler",
@@ -345,7 +344,60 @@
                 "response",
                 "server"
             ],
-            "time": "2018-01-26 14:27:09"
+            "time": "2018-01-26T14:27:09+00:00"
+        },
+        {
+            "name": "psr/http-server-middleware",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-server-middleware.git",
+                "reference": "e01237126449cadfb66b60a5a818de9e9dde6bf3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/php-fig/http-server-middleware/e01237126449cadfb66b60a5a818de9e9dde6bf3.zip",
+                "reference": "e01237126449cadfb66b60a5a818de9e9dde6bf3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0",
+                "psr/http-message": "^1.0",
+                "psr/http-server-handler": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Server\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP server-side middleware",
+            "keywords": [
+                "http",
+                "http-interop",
+                "middleware",
+                "psr",
+                "psr-15",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "time": "2018-01-22T22:18:49+00:00"
         },
         {
             "name": "psr/log",
@@ -392,7 +444,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2018-04-03 15:59:15"
+            "time": "2018-04-03T15:59:15+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -432,13 +484,15 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
-            "time": "2016-02-11 07:05:27"
+            "time": "2016-02-11T07:05:27+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "psr/http-server-middleware": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

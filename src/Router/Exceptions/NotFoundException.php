@@ -1,12 +1,13 @@
-<?php declare(strict_types=1);
-namespace Onion\Framework\Router\Exceptions;
+<?php
 
-use Onion\Framework\Router\Interfaces\Exception\NotFoundException as RouteNotFoundException;
+declare(strict_types=1);
+
+namespace Ypf\Router\Exceptions;
+
+use Ypf\Exceptions\NotFoundException as RouteNotFoundException;
 
 /**
- * Class NotFoundException
- *
- * @package Onion\Framework\Router\Exceptions
+ * Class NotFoundException.
  */
 class NotFoundException extends \Exception implements RouteNotFoundException
 {

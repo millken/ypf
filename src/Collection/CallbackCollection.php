@@ -11,10 +11,6 @@ class CallbackCollection extends Collection
 
     public function __construct(array $items, callable $callback)
     {
-        if (is_array($items)) {
-            $items = new \ArrayIterator($items);
-        }
-
         parent::__construct($items);
         $this->callback = $callback;
     }

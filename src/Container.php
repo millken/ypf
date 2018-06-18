@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace Ypf;
 
@@ -44,7 +44,7 @@ class Container implements ContainerInterface
                 assert(
                     is_string($name),
                     new ContainerException(
-                        "Registered factory for '{$key}' must be a valid FQCN, " . gettype($key) . ' given'
+                        "Registered factory for '{$key}' must be a valid FQCN, ".gettype($key).' given'
                     )
                 );
 
@@ -59,6 +59,12 @@ class Container implements ContainerInterface
                 );
 
                 return $factory->build($this);
+            }
+
+            if (class_exists($key)) {
+                $this->dependencies->{$key} = $this->retrieveFromReflection($key);
+
+                return $this->dependencies->{$key};
             }
 
             if (isset(static::$services[$key])) {

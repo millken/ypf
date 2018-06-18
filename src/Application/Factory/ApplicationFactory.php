@@ -59,8 +59,6 @@ final class ApplicationFactory implements FactoryInterface
                     yield $container->get($middleware);
                 }
             };
-            $a = $container->get(ResponseInterface::class);
-            exit;
 
             return $routeObject->withRequestHandler(new RequestHandler(
                 $middlewareGenerator(),

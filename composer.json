@@ -6,7 +6,9 @@
     "homepage": "https://github.com/millken/ypf/",
     "license": "Apache-2.0",
     "autoload": {
-        "psr-4": { "Ypf\\": "src/" }
+        "psr-4": { "Ypf\\": "src",
+                "Controller\\": "example/Controller" 
+            }
     },
     "require": {
         "php": ">=7.0.0",
@@ -16,7 +18,8 @@
         "psr/container": "^1.0",
         "psr/log": "^1.0",
         "mtdowling/cron-expression": "^1.1",
-        "monolog/monolog": "^1.2"
+        "monolog/monolog": "^1.2",
+        "psr/http-server-middleware": "^1.0"
     },
     "authors": [{
         "name": "millken",

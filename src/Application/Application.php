@@ -12,6 +12,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareTrait;
+use Ypf\Router\Exceptions\NotFoundException;
 
 class Application implements ApplicationInterface, LoggerAwareInterface
 {
