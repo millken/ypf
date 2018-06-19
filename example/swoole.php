@@ -2,16 +2,21 @@
 
 require './vendor/autoload.php';
 
-use Ypf\Application\Factory\ApplicationFactory;
+use Ypf\Application\Factory\SwooleApplicationFactory;
 use Ypf\Interfaces\FactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 
 $services = [
-    FactoryInterface::class => ApplicationFactory::class,
-    'Application' => [
-        'address' => '', // The address on which to bind the app server. Binds on '0.0.0.0' if none is provided
-        'port' => 1234, // The port on which the server to listen. A random one will be used if none is provided
-        'options' => [// A list of options that is being passed directly to `Swoole\Http\Server::set()` for configuration
+    FactoryInterface::class => SwooleApplicationFactory::class,
+    'swoole' => [
+        'listen' => '*:7000',
+        'user' => 'nobody',
+        'pid_file' => '/tmp/dash.pid',
+        'master_process_name' => 'ycs-master',
+        'manager_process_name' => 'ycs-manager',
+        'worker_process_name' => 'ycs-worker-%d',
+        'task_worker_process_name' => 'ycs-task-worker-%d',
+        'options' => [
         ],
     ],
     'routes' => [

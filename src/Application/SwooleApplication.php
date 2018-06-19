@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ypf\Application;
 
-use GuzzleHttp\Psr7\Response;
 use Ypf\Interfaces\ApplicationInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -13,9 +12,13 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareTrait;
 use Ypf\Router\Exceptions\NotFoundException;
+use GuzzleHttp\Psr7\Response;
+use Swoole\Http\Server;
 
 class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
 {
+    /** @var \Swoole\Http\Server */
+    private $server;
     /**
      * @var RouteInterface[]
      */
@@ -25,29 +28,43 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
 
     use LoggerAwareTrait;
 
-    public function __construct(iterable $routes, RequestHandlerInterface $rootHandler = null)
+    public function __construct(iterable $routes, RequestHandlerInterface $rootHandler = null, Server $server)
     {
         $this->routes = $routes;
         $this->requestHandler = $rootHandler;
+        $this->server = $server;
     }
 
     public function run(): void
     {
-        $request = ServerRequest::fromGlobals();
-        $response = $this->handle($request);
-        $status = $response->getStatusCode();
-        $reasonPhrase = $response->getReasonPhrase();
-        header(
-            "HTTP/{$response->getProtocolVersion()} {$status} {$reasonPhrase}",
-            true,
-            $status
-        );
-        foreach ($response->getHeaders() as $header => $values) {
-            foreach ($values as $index => $value) {
-                header("{$header}: {$value}", $index === 0);
-            }
+        $this->server->on('Request', [$this, 'onRequest']);
+        $this->server->start();
+    }
+
+    public function onRequest(\Swoole\Http\Request $request, \Swoole\Http\Response $response): void
+    {
+        $_SERVER = [];
+        foreach ($request->server as $name => $value) {
+            $_SERVER[strtoupper($name)] = $value;
         }
-        file_put_contents('php://output', $response->getBody());
+        $_GET = $request->get ?? [];
+        $_POST = $request->post ?? [];
+        $_COOKIE = $request->cookie ?? [];
+        $_FILES = $request->files ?? [];
+
+        $headers = $request->header;
+        $request = ServerRequest::fromGlobals();
+        foreach ($headers as $header => $line) {
+            $request = $request->withHeader($header, $line);
+        }
+        $result = $this->handle($request);
+        $status = $result->getStatusCode();
+        $reasonPhrase = $result->getReasonPhrase();
+        $response->status($result->getStatusCode());
+        foreach ($result->getHeaders() as $header => $values) {
+            $response->header($header, $result->getHeaderLine($header));
+        }
+        $response->end($result->getBody());
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface

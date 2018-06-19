@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ypf\Application\Factory;
 
 use GuzzleHttp\Psr7\Response;
+use Ypf\Application\SwooleApplication;
 use Ypf\Application\Application;
 use Ypf\Collection\CallbackCollection;
 use Ypf\Interfaces\FactoryInterface;
@@ -67,11 +68,34 @@ final class SwooleApplicationFactory implements FactoryInterface
             ));
         };
 
+        $swoole = $container->get('swoole');
+        $listen = isset($swoole['listen']) ? $swoole['listen'] : '127.0.0.1:';
+
+        list($address, $port) = explode(':', $listen, 2);
+
+        $port = !empty($port) ? (int) $port : $this->getRandomPort($address);
+        $server = new \Swoole\Http\Server($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
+
+        if (isset($swoole['ssl_listen'])) {
+            list($ssl_addr, $ssl_port) = explode(':', $swoole['ssl_listen'], 2);
+            $server->addlistener($ssl_addr, $ssl_port, SWOOLE_TCP | SWOOLE_SSL);
+        }
+        isset($swoole['options']) && $server->set($swoole['options']);
+
+        if (isset($swoole['user'])) {
+            $user = posix_getpwnam($swoole['user']);
+            if ($user) {
+                posix_setuid($user['uid']);
+                posix_setgid($user['gid']);
+            }
+        }
+
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
         $app = new SwooleApplication(
             $routes,
             $container->has(RequestHandlerInterface::class) ?
-                $container->get(RequestHandlerInterface::class) : null
+                $container->get(RequestHandlerInterface::class) : null,
+                $server
         );
         $logger = $container->has(\Psr\Log\LoggerInterface::class) ?
             $container->get(\Psr\Log\LoggerInterface::class) : new VoidLogger();
@@ -79,5 +103,18 @@ final class SwooleApplicationFactory implements FactoryInterface
         $app->setLogger($logger);
 
         return $app;
+    }
+
+    private function getRandomPort($address): int
+    {
+        while (true) {
+            $port = mt_rand(1025, 65000);
+            $fp = @fsockopen($address, $port, $errno, $errstr, 0.1);
+            if (!$fp) {
+                break;
+            }
+        }
+
+        return $port;
     }
 }
