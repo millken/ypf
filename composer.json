@@ -6,12 +6,13 @@
     "homepage": "https://github.com/millken/ypf/",
     "license": "Apache-2.0",
     "autoload": {
-        "psr-4": { "Ypf\\": "src",
-                "Controller\\": "example/Controller" 
-            }
+        "psr-4": {
+            "Ypf\\": "src",
+            "Controller\\": "example/Controller"
+        }
     },
     "require": {
-        "php": ">=7.0.0",
+        "php": ">=7.2.0",
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
         "guzzlehttp/psr7": "^1.4",

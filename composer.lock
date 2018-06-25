@@ -1,10 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "dbfd04b751ecc004380e652c00eba960",
+    "hash": "ec635744a6a73e6f2896a78cb023529a",
+    "content-hash": "86758c37cca5f4e22fa2799e360100f8",
     "packages": [
         {
             "name": "guzzlehttp/psr7",
@@ -70,7 +71,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2018-06-08T08:55:26+00:00"
+            "time": "2018-06-08 08:55:26"
         },
         {
             "name": "monolog/monolog",
@@ -148,7 +149,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2018-06-19T07:22:34+00:00"
+            "time": "2018-06-19 07:22:34"
         },
         {
             "name": "mtdowling/cron-expression",
@@ -192,7 +193,7 @@
                 "cron",
                 "schedule"
             ],
-            "time": "2017-01-23T04:29:33+00:00"
+            "time": "2017-01-23 04:29:33"
         },
         {
             "name": "psr/container",
@@ -241,7 +242,7 @@
                 "container-interop",
                 "psr"
             ],
-            "time": "2017-06-28T15:35:32+00:00"
+            "time": "2017-06-28 15:35:32"
         },
         {
             "name": "psr/http-message",
@@ -291,7 +292,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-06T14:39:51+00:00"
+            "time": "2016-08-06 14:39:51"
         },
         {
             "name": "psr/http-server-handler",
@@ -344,7 +345,7 @@
                 "response",
                 "server"
             ],
-            "time": "2018-01-26T14:27:09+00:00"
+            "time": "2018-01-26 14:27:09"
         },
         {
             "name": "psr/http-server-middleware",
@@ -397,7 +398,7 @@
                 "request",
                 "response"
             ],
-            "time": "2018-01-22T22:18:49+00:00"
+            "time": "2018-01-22 22:18:49"
         },
         {
             "name": "psr/log",
@@ -444,7 +445,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2018-04-03T15:59:15+00:00"
+            "time": "2018-04-03 15:59:15"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -484,15 +485,13 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
-            "time": "2016-02-11T07:05:27+00:00"
+            "time": "2016-02-11 07:05:27"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "psr/http-server-middleware": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
