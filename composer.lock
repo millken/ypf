@@ -1,10 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "92b3d01ec17d84eca1af8b292c27b19b",
+    "hash": "da0eba9ba1f6fef9e2339a4c0140cc63",
+    "content-hash": "1bd1a0dbf7fddb9f1e4e296f2cf9ebf9",
     "packages": [
         {
             "name": "guzzlehttp/psr7",
@@ -70,25 +71,25 @@
                 "uri",
                 "url"
             ],
-            "time": "2018-06-08T08:55:26+00:00"
+            "time": "2018-06-08 08:55:26"
         },
         {
             "name": "monolog/monolog",
-            "version": "dev-master",
+            "version": "1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "e5900c38147d13f0aa9072aaff7ff0f8dbb253f3"
+                "reference": "c465e1144536862e03f519cb3d65e924062cabfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/Seldaek/monolog/e5900c38147d13f0aa9072aaff7ff0f8dbb253f3.zip",
-                "reference": "e5900c38147d13f0aa9072aaff7ff0f8dbb253f3",
+                "url": "https://files.phpcomposer.com/files/Seldaek/monolog/c465e1144536862e03f519cb3d65e924062cabfb.zip",
+                "reference": "c465e1144536862e03f519cb3d65e924062cabfb",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1",
-                "psr/log": "^1.0.1"
+                "php": ">=5.3.0",
+                "psr/log": "~1.0"
             },
             "provide": {
                 "psr/log-implementation": "1.0.0"
@@ -96,14 +97,12 @@
             "require-dev": {
                 "aws/aws-sdk-php": "^2.4.9 || ^3.0",
                 "doctrine/couchdb": "~1.0@dev",
-                "graylog2/gelf-php": "^1.4.2",
-                "jakub-onderka/php-parallel-lint": "^0.9",
+                "graylog2/gelf-php": "~1.0",
+                "jakub-onderka/php-parallel-lint": "0.9",
                 "php-amqplib/php-amqplib": "~2.4",
                 "php-console/php-console": "^3.1.3",
-                "phpspec/prophecy": "^1.6.1",
-                "phpunit/phpunit": "^6.5",
-                "predis/predis": "^1.1",
-                "rollbar/rollbar": "^1.3",
+                "phpunit/phpunit": "~4.5",
+                "phpunit/phpunit-mock-objects": "2.3.0",
                 "ruflin/elastica": ">=0.90 <3.0",
                 "sentry/sentry": "^0.13",
                 "swiftmailer/swiftmailer": "^5.3|^6.0"
@@ -112,9 +111,9 @@
                 "aws/aws-sdk-php": "Allow sending log messages to AWS services like DynamoDB",
                 "doctrine/couchdb": "Allow sending log messages to a CouchDB server",
                 "ext-amqp": "Allow sending log messages to an AMQP server (1.0+ required)",
-                "ext-mongodb": "Allow sending log messages to a MongoDB server (via driver)",
+                "ext-mongo": "Allow sending log messages to a MongoDB server",
                 "graylog2/gelf-php": "Allow sending log messages to a GrayLog2 server",
-                "mongodb/mongodb": "Allow sending log messages to a MongoDB server (via library)",
+                "mongodb/mongodb": "Allow sending log messages to a MongoDB server via PHP Driver",
                 "php-amqplib/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib",
                 "php-console/php-console": "Allow sending log messages to Google Chrome",
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
@@ -124,7 +123,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.x-dev"
+                    "dev-master": "2.0.x-dev"
                 }
             },
             "autoload": {
@@ -150,7 +149,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2018-06-19T07:22:38+00:00"
+            "time": "2018-06-19 07:22:34"
         },
         {
             "name": "mtdowling/cron-expression",
@@ -194,7 +193,7 @@
                 "cron",
                 "schedule"
             ],
-            "time": "2017-01-23T04:29:33+00:00"
+            "time": "2017-01-23 04:29:33"
         },
         {
             "name": "psr/container",
@@ -243,7 +242,7 @@
                 "container-interop",
                 "psr"
             ],
-            "time": "2017-06-28T15:35:32+00:00"
+            "time": "2017-06-28 15:35:32"
         },
         {
             "name": "psr/http-message",
@@ -293,7 +292,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-06T14:39:51+00:00"
+            "time": "2016-08-06 14:39:51"
         },
         {
             "name": "psr/http-server-handler",
@@ -346,7 +345,7 @@
                 "response",
                 "server"
             ],
-            "time": "2018-01-26T14:27:09+00:00"
+            "time": "2018-01-26 14:27:09"
         },
         {
             "name": "psr/log",
@@ -393,7 +392,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2018-04-03T15:59:15+00:00"
+            "time": "2018-04-03 15:59:15"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -433,15 +432,13 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
-            "time": "2016-02-11T07:05:27+00:00"
+            "time": "2016-02-11 07:05:27"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "monolog/monolog": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
