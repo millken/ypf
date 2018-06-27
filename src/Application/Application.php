@@ -34,6 +34,7 @@ class Application implements ApplicationInterface, LoggerAwareInterface
     public function run(): void
     {
         $request = ServerRequest::fromGlobals();
+        $request = $request->withAttribute('rawContent', file_get_contents('php://input'));
         $response = $this->handle($request);
         $status = $response->getStatusCode();
         $reasonPhrase = $response->getReasonPhrase();

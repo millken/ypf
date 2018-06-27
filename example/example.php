@@ -8,12 +8,6 @@ use Psr\Http\Message\ResponseInterface;
 
 $services = [
     FactoryInterface::class => ApplicationFactory::class,
-    'Application' => [
-        'address' => '', // The address on which to bind the app server. Binds on '0.0.0.0' if none is provided
-        'port' => 1234, // The port on which the server to listen. A random one will be used if none is provided
-        'options' => [// A list of options that is being passed directly to `Swoole\Http\Server::set()` for configuration
-        ],
-    ],
     'routes' => [
         [
             'pattern' => '/',
@@ -26,7 +20,7 @@ $services = [
             'middleware' => [
                 Controller\Greeter::class,
             ],
-            'methods' => ['GET', 'PUT'],
+            'methods' => ['POST', 'GET', 'PUT'],
         ],
     ],
     'middleware' => [

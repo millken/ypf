@@ -51,12 +51,14 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
         $_POST = $request->post ?? [];
         $_COOKIE = $request->cookie ?? [];
         $_FILES = $request->files ?? [];
-
+        $content = $request->rawContent() ?: null;
         $headers = $request->header;
         $request = ServerRequest::fromGlobals();
         foreach ($headers as $header => $line) {
             $request = $request->withHeader($header, $line);
         }
+        $request = $request->withAttribute('rawContent', $content);
+
         $result = $this->handle($request);
         $status = $result->getStatusCode();
         $reasonPhrase = $result->getReasonPhrase();

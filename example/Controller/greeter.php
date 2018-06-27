@@ -29,4 +29,19 @@ class Greeter extends RestController
     public function put(ServerRequestInterface $request, RequestHandlerInterface $requestHandler)
     {
     }
+
+    public function post(ServerRequestInterface $request, RequestHandlerInterface $requestHandler): ResponseInterface
+    {
+        $name = ucwords($request->getAttribute('name', 'World!'));
+        $content = $request->getAttribute('rawContent', 'not set');
+        $result = [
+            'name' => $name,
+            'content' => $content,
+        ];
+
+        $headers['content-type'] = 'application/json';
+        $payload = json_encode($result);
+
+        return new Response(200, $headers, $payload);
+    }
 }

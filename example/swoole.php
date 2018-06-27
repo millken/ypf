@@ -31,7 +31,7 @@ $services = [
             'middleware' => [
                 Controller\Greeter::class,
             ],
-            'methods' => ['GET', 'PUT'],
+            'methods' => ['POST', 'GET', 'PUT'],
         ],
     ],
     'middleware' => [
