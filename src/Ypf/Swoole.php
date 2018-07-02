@@ -293,7 +293,7 @@ class Swoole extends Ypf
             return true;
         }
         $worker_pids = $this->table->get('worker_pid');
-        foreach ($worker_pids as $worker_pid) {
+        foreach ((array) $worker_pids as $worker_pid) {
             \swoole_process::kill($worker_pid, 9);
         }
         $this->table->delete('worker_pid');
