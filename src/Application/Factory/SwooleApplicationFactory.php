@@ -99,7 +99,7 @@ final class SwooleApplicationFactory implements FactoryInterface
         );
         $logger = $container->has(\Psr\Log\LoggerInterface::class) ?
             $container->get(\Psr\Log\LoggerInterface::class) : new VoidLogger();
-
+        $logger->warning("Swoole HTTP Server listen: $address:$port");
         $app->setLogger($logger);
 
         return $app;

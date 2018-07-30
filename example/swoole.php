@@ -23,12 +23,14 @@ $services = [
         [
             'pattern' => '/',
             'middleware' => [
+                Middleware\RewriteMiddleware::class,
                 Controller\Index::class,
             ],
             'methods' => ['GET'],
         ], [
             'pattern' => '/greet{/{name}}?',
             'middleware' => [
+                Middleware\BenchmarkMiddleware::class,
                 Controller\Greeter::class,
             ],
             'methods' => ['POST', 'GET', 'PUT'],

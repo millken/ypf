@@ -1,12 +1,60 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "hash": "ec635744a6a73e6f2896a78cb023529a",
-    "content-hash": "86758c37cca5f4e22fa2799e360100f8",
+    "content-hash": "9098a14ddf973468203d6b6e1f5772e5",
     "packages": [
+        {
+            "name": "dragonmantank/cron-expression",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dragonmantank/cron-expression.git",
+                "reference": "92a2c3768d50e21a1f26a53cb795ce72806266c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dragonmantank/cron-expression/zipball/92a2c3768d50e21a1f26a53cb795ce72806266c5",
+                "reference": "92a2c3768d50e21a1f26a53cb795ce72806266c5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~6.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Cron\\": "src/Cron/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Dowling",
+                    "email": "mtdowling@gmail.com",
+                    "homepage": "https://github.com/mtdowling"
+                },
+                {
+                    "name": "Chris Tankersley",
+                    "email": "chris@ctankersley.com",
+                    "homepage": "https://github.com/dragonmantank"
+                }
+            ],
+            "description": "CRON for PHP: Calculate the next or previous run date and determine if a CRON expression is due",
+            "keywords": [
+                "cron",
+                "schedule"
+            ],
+            "time": "2018-06-06T03:12:17+00:00"
+        },
         {
             "name": "guzzlehttp/psr7",
             "version": "dev-master",
@@ -17,7 +65,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/guzzle/psr7/58f6e264ef0e4107c8b3d15a9c2e653b2bce0b4d.zip",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/58f6e264ef0e4107c8b3d15a9c2e653b2bce0b4d",
                 "reference": "58f6e264ef0e4107c8b3d15a9c2e653b2bce0b4d",
                 "shasum": ""
             },
@@ -71,7 +119,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2018-06-08 08:55:26"
+            "time": "2018-06-08T08:55:26+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -83,7 +131,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/Seldaek/monolog/c465e1144536862e03f519cb3d65e924062cabfb.zip",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/c465e1144536862e03f519cb3d65e924062cabfb",
                 "reference": "c465e1144536862e03f519cb3d65e924062cabfb",
                 "shasum": ""
             },
@@ -149,27 +197,27 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2018-06-19 07:22:34"
+            "time": "2018-06-19T07:22:34+00:00"
         },
         {
             "name": "mtdowling/cron-expression",
-            "version": "v1.2.1.x-dev",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mtdowling/cron-expression.git",
-                "reference": "9504fa9ea681b586028adaaa0877db4aecf32bad"
+                "reference": "37faa61b1ad8d19037753f893f97da927c787de0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/mtdowling/cron-expression/9504fa9ea681b586028adaaa0877db4aecf32bad.zip",
-                "reference": "9504fa9ea681b586028adaaa0877db4aecf32bad",
+                "url": "https://api.github.com/repos/mtdowling/cron-expression/zipball/37faa61b1ad8d19037753f893f97da927c787de0",
+                "reference": "37faa61b1ad8d19037753f893f97da927c787de0",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.2"
+                "php": ">=7.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4.0|~5.0"
+                "phpunit/phpunit": "~5.7"
             },
             "type": "library",
             "autoload": {
@@ -193,7 +241,7 @@
                 "cron",
                 "schedule"
             ],
-            "time": "2017-01-23 04:29:33"
+            "time": "2017-10-12T15:50:39+00:00"
         },
         {
             "name": "psr/container",
@@ -205,7 +253,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/php-fig/container/2cc4a01788191489dc7459446ba832fa79a216a7.zip",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/2cc4a01788191489dc7459446ba832fa79a216a7",
                 "reference": "2cc4a01788191489dc7459446ba832fa79a216a7",
                 "shasum": ""
             },
@@ -242,7 +290,7 @@
                 "container-interop",
                 "psr"
             ],
-            "time": "2017-06-28 15:35:32"
+            "time": "2017-06-28T15:35:32+00:00"
         },
         {
             "name": "psr/http-message",
@@ -254,7 +302,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/php-fig/http-message/f6561bf28d520154e4b0ec72be95418abe6d9363.zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
                 "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
                 "shasum": ""
             },
@@ -292,7 +340,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-06 14:39:51"
+            "time": "2016-08-06T14:39:51+00:00"
         },
         {
             "name": "psr/http-server-handler",
@@ -304,7 +352,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/php-fig/http-server-handler/ede6c504a77ebc87e7256d13df5877cbf9127104.zip",
+                "url": "https://api.github.com/repos/php-fig/http-server-handler/zipball/ede6c504a77ebc87e7256d13df5877cbf9127104",
                 "reference": "ede6c504a77ebc87e7256d13df5877cbf9127104",
                 "shasum": ""
             },
@@ -345,7 +393,7 @@
                 "response",
                 "server"
             ],
-            "time": "2018-01-26 14:27:09"
+            "time": "2018-01-26T14:27:09+00:00"
         },
         {
             "name": "psr/http-server-middleware",
@@ -357,7 +405,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/php-fig/http-server-middleware/e01237126449cadfb66b60a5a818de9e9dde6bf3.zip",
+                "url": "https://api.github.com/repos/php-fig/http-server-middleware/zipball/e01237126449cadfb66b60a5a818de9e9dde6bf3",
                 "reference": "e01237126449cadfb66b60a5a818de9e9dde6bf3",
                 "shasum": ""
             },
@@ -398,7 +446,7 @@
                 "request",
                 "response"
             ],
-            "time": "2018-01-22 22:18:49"
+            "time": "2018-01-22T22:18:49+00:00"
         },
         {
             "name": "psr/log",
@@ -410,7 +458,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/php-fig/log/3490ba5925e6dcbe6de950c5c6b8dce9f6e96eda.zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/3490ba5925e6dcbe6de950c5c6b8dce9f6e96eda",
                 "reference": "3490ba5925e6dcbe6de950c5c6b8dce9f6e96eda",
                 "shasum": ""
             },
@@ -445,7 +493,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2018-04-03 15:59:15"
+            "time": "2018-04-03T15:59:15+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -457,7 +505,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/ralouphie/getallheaders/5601c8a83fbba7ef674a7369456d12f1e0d0eafa.zip",
+                "url": "https://api.github.com/repos/ralouphie/getallheaders/zipball/5601c8a83fbba7ef674a7369456d12f1e0d0eafa",
                 "reference": "5601c8a83fbba7ef674a7369456d12f1e0d0eafa",
                 "shasum": ""
             },
@@ -485,17 +533,19 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
-            "time": "2016-02-11 07:05:27"
+            "time": "2016-02-11T07:05:27+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "dragonmantank/cron-expression": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.0.0"
+        "php": ">=7.2.0"
     },
     "platform-dev": []
 }

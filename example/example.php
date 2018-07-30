@@ -18,6 +18,7 @@ $services = [
         ], [
             'pattern' => '/greet{/{name}}?',
             'middleware' => [
+                Middleware\BenchmarkMiddleware::class,
                 Controller\Greeter::class,
             ],
             'methods' => ['POST', 'GET', 'PUT'],

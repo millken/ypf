@@ -8,7 +8,9 @@
     "autoload": {
         "psr-4": {
             "Ypf\\": "src",
-            "Controller\\": "example/Controller"
+            "Controller\\": "example/Controller",
+            "Middleware\\": "example/Middleware",
+            "Worker\\": "example/Worker"
         }
     },
     "require": {
@@ -18,7 +20,7 @@
         "guzzlehttp/psr7": "^1.4",
         "psr/container": "^1.0",
         "psr/log": "^1.0",
-        "mtdowling/cron-expression": "^1.1",
+        "dragonmantank/cron-expression": "dev-master",
         "monolog/monolog": "^1.2",
         "psr/http-server-middleware": "^1.0"
     },
