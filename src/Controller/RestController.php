@@ -8,10 +8,9 @@ use GuzzleHttp\Psr7\Stream;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-abstract class RestController implements MiddlewareInterface
+abstract class RestController extends Controller
 {
     private const HTTP_METHODS = [
         'get',

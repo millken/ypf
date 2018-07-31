@@ -7,10 +7,7 @@
     "license": "Apache-2.0",
     "autoload": {
         "psr-4": {
-            "Ypf\\": "src",
-            "Controller\\": "example/Controller",
-            "Middleware\\": "example/Middleware",
-            "Worker\\": "example/Worker"
+            "Ypf\\": "src"
         }
     },
     "require": {

@@ -105,7 +105,7 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
                                 if (is_numeric($cron_time)) {
                                     $time_integer = intval($cron_time);
                                 } else {
-                                    $logger->error('cron_time is Invalid', $v);
+                                    $logger->error('cron time is Invalid', $v);
                                     continue;
                                 }
                             } else {

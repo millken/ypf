@@ -18,6 +18,8 @@ class Container implements ContainerInterface
     /** @var ContainerInterface */
     private static $services = [];
 
+    protected static $instances = null;
+
     /**
      * Container constructor.
      *
@@ -28,6 +30,12 @@ class Container implements ContainerInterface
         static::$services = $services;
 
         $this->dependencies = new \stdClass();
+        static::$instances = $this;
+    }
+
+    public static function &getContainer()
+    {
+        return static::$instances;
     }
 
     public function get($key)
