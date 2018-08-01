@@ -1,22 +1,29 @@
 {
-    "name"       : "millken/ypf",
+    "name": "millken/ypf",
     "description": "PHP framework & Application Server.",
-    "type"       : "library",
-    "keywords"   : ["library", "webserver", "framework"],
-    "homepage"   : "https://github.com/millken/ypf/",
-    "license"    : "Apache-2.0",
+    "type": "library",
+    "keywords": ["library", "webserver", "framework"],
+    "homepage": "https://github.com/millken/ypf/",
+    "license": "Apache-2.0",
     "autoload": {
-        "psr-0": {"Ypf": "src/"}
-    },
-	"require": {
-		 "php" : ">=7.0.0",
-        "mtdowling/cron-expression": "^1.1"
-    },
-    "authors"    : [
-        {
-            "name" : "millken",
-            "email": "millken@gmail.com"
+        "psr-4": {
+            "Ypf\\": "src"
         }
-    ],
+    },
+    "require": {
+        "php": ">=7.2.0",
+        "psr/http-message": "^1.0",
+        "psr/http-server-handler": "^1.0",
+        "guzzlehttp/psr7": "^1.4",
+        "psr/container": "^1.0",
+        "psr/log": "^1.0",
+        "dragonmantank/cron-expression": "dev-master",
+        "monolog/monolog": "^1.2",
+        "psr/http-server-middleware": "^1.0"
+    },
+    "authors": [{
+        "name": "millken",
+        "email": "millken@gmail.com"
+    }],
     "minimum-stability": "dev"
 }
