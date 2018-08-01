@@ -22,10 +22,13 @@ final class SwooleWorkerApplicationFactory implements FactoryInterface
         $port = $this->getRandomPort($address);
         $server = new \Swoole\Http\Server($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
+        $worker = $container->get('worker');
+        isset($worker['options']) && $server->set($worker['options']);
+
         $app = new SwooleWorkerApplication($container, $server);
         $logger = $container->has(\Psr\Log\LoggerInterface::class) ?
             $container->get(\Psr\Log\LoggerInterface::class) : new VoidLogger();
-        $logger->warning("Swoole HTTP Server listen: $address:$port");
+        $logger->info("Swoole HTTP Server listen: $address:$port");
         $app->setLogger($logger);
 
         return $app;

@@ -26,6 +26,10 @@
         "name": "millken",
         "email": "millken@gmail.com"
     }],
+    "require-dev": {
+        "lawoole/swoole": "dev-master"
+    },
     "suggest": {
-        "dragonmantank/cron-expression": "CRON for PHP: Calculate the next or previous run date and determine if a CRON expression is due"
+        "dragonmantank/cron-expression": "support cron worker",
+        "ext-swoole": "swoole extension"
     }}

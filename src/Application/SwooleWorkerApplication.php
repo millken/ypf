@@ -38,6 +38,7 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
         $this->server->on('WorkerStart', [$this, 'onWorkerStart']);
         $this->server->on('PipeMessage', [$this, 'onPipeMessage']);
         $this->server->on('Task', [$this, 'onTask']);
+        $this->server->on('Finish', [$this, 'onFinish']);
         $this->server->start();
     }
 
@@ -46,6 +47,10 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
     }
 
     public function onRequest(\Swoole\Http\Request $request, \Swoole\Http\Response $response): void
+    {
+    }
+
+    public function onFinish(Server $server, $task_id, $data)
     {
     }
 
@@ -84,7 +89,7 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
             $table = new Table(1024);
             $table->column('value', Table::TYPE_STRING, 65531);
             $table->create();
-            if (count($worker['cron'])) {
+            if (isset($worker['cron']) && count($worker['cron'])) {
                 $config = [];
                 foreach ($worker['cron'] as $v) {
                     $data = Serialize::pack($v);
