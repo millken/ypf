@@ -5,6 +5,9 @@
     "keywords": ["library", "webserver", "framework"],
     "homepage": "https://github.com/millken/ypf/",
     "license": "Apache-2.0",
+    "support": {
+		"issues": "https://github.com/millken/ypf/issues"
+	},
     "autoload": {
         "psr-4": {
             "Ypf\\": "src"
@@ -17,13 +20,12 @@
         "guzzlehttp/psr7": "^1.4",
         "psr/container": "^1.0",
         "psr/log": "^1.0",
-        "dragonmantank/cron-expression": "^2.2.0",
-        "monolog/monolog": "^1.2",
         "psr/http-server-middleware": "^1.0"
     },
     "authors": [{
         "name": "millken",
         "email": "millken@gmail.com"
     }],
-    "minimum-stability": "dev"
-}
+    "suggest": {
+        "dragonmantank/cron-expression": "CRON for PHP: Calculate the next or previous run date and determine if a CRON expression is due"
+    }}
