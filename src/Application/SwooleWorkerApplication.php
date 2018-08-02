@@ -18,6 +18,7 @@ use Swoole\Serialize;
 
 class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterface
 {
+    private static $inode;
     /** @var \Swoole\Http\Server */
     private $server;
     private static $isSpawnWorker;
@@ -30,16 +31,31 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
     {
         $this->container = $container;
         $this->server = $server;
+        static::$inode = getmyinode();
     }
 
     public function run(): void
     {
+        $this->server->on('Start', [$this, 'onStart']);
+        $this->server->on('ManagerStart', [$this, 'onManagerStart']);
         $this->server->on('Request', [$this, 'onRequest']);
         $this->server->on('WorkerStart', [$this, 'onWorkerStart']);
         $this->server->on('PipeMessage', [$this, 'onPipeMessage']);
         $this->server->on('Task', [$this, 'onTask']);
         $this->server->on('Finish', [$this, 'onFinish']);
         $this->server->start();
+    }
+
+    public function onManagerStart(\Swoole\Http\Server $server): void
+    {
+        $name = sprintf('ypf-manager-%d', static::$inode);
+        \swoole_set_process_name($name);
+    }
+
+    public function onStart(\Swoole\Http\Server $server): void
+    {
+        $name = sprintf('ypf-master-%d', static::$inode);
+        \swoole_set_process_name($name);
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -50,16 +66,12 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
     {
     }
 
-    public function onFinish(Server $server, $task_id, $data)
+    public function onFinish(Server $server, $task_id, $data): void
     {
     }
 
-    public function onTask(Server $server, $task_id, $from_id, $data)
+    public function onTask(Server $server, $task_id, $from_id, $data): void
     {
-        $data = unserialize($data);
-        $result = call_user_func_array($data['func'], $data['args']);
-
-        return array('callback' => $data['callback'], 'result' => $result, 'thread' => $data['thread']);
     }
 
     public function onPipeMessage(\Swoole\Http\Request $server, $worker_id, $data)
@@ -70,20 +82,24 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
     public function onWorkerStart(Server $server, int $worker_id): void
     {
         $worker = $this->container->get('worker');
-
+        $name = sprintf('ypf-worker-%d', static::$inode);
+        \swoole_set_process_name($name);
         if (!$worker_id && !static::$isSpawnWorker) {
             $container = $this->container;
-            foreach ((array) $worker['single'] as $single) {
-                $process = new Process(function (Process $process) use (&$container) {
-                    $config = unserialize($process->pop());
-                    $process->name($config['worker']);
-                    $obj = $container->get($config['worker']);
-                    $obj->run($container);
-                }, false, 1);
+            if (isset($worker['single']) && count($worker['single'])) {
+                foreach ($worker['single'] as $single) {
+                    $process = new Process(function (Process $process) use (&$container) {
+                        $config = unserialize($process->pop());
+                        $name = sprintf('ypf-worker-%d-%s', static::$inode, $config['worker']);
+                        $process->name($name);
+                        $obj = $container->get($config['worker']);
+                        $obj->run($container);
+                    }, false, 1);
 
-                $process->useQueue();
-                $pid = $process->start();
-                $process->push(serialize(array('worker' => $single)));
+                    $process->useQueue();
+                    $pid = $process->start();
+                    $process->push(serialize(array('worker' => $single)));
+                }
             }
 
             $table = new Table(1024);
@@ -145,11 +161,21 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
                             'value' => Serialize::pack($cron_queue),
                         ]);
                     });
-                    $process->name('cron-worker');
+                    $name = sprintf('ypfworker-%d-cron', static::$inode);
+                    $process->name($name);
                 }, false, 1);
                 $process->start();
+                $this->workers[$process->pid] = $process;
             }
             static::$isSpawnWorker = false;
+        }
+    }
+
+    public function onReceive(int $pipe): void
+    {
+        if (array_key_exists($pipe, $this->pipes)) {
+            $worker = $this->pipes[$pipe];
+            echo str_replace(PHP_EOL, PHP_EOL.$worker->pid.' | ', $worker->read());
         }
     }
 }
