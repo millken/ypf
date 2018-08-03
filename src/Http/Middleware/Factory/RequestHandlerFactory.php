@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
-namespace Onion\Framework\Http\Middleware\Factory;
+<?php
+
+declare(strict_types=1);
+
+namespace Ypf\Http\Middleware\Factory;
 
 use GuzzleHttp\Psr7\Response;
-use Onion\Framework\Dependency\Interfaces\FactoryInterface;
-use Onion\Framework\Http\Middleware\RequestHandler;
-use Onion\Framework\Router\Route;
+use Ypf\Dependency\Interfaces\FactoryInterface;
+use Ypf\Http\Middleware\RequestHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -30,6 +32,7 @@ class RequestHandlerFactory implements FactoryInterface
                 yield $instance;
             }
         };
+
         return new RequestHandler(
             $middlewareGenerator(),
             $container->has(ResponseInterface::class) ?

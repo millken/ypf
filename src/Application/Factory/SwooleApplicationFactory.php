@@ -16,6 +16,7 @@ use Ypf\Router\Route;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -57,7 +58,15 @@ final class SwooleApplicationFactory implements FactoryInterface
                     $route['middleware']
                 );
                 foreach ($stack as $middleware) {
-                    yield $container->get($middleware);
+                    if (is_string($middleware)) {
+                        yield $container->get($middleware);
+                    } else {
+                        assert(
+                            is_object($middleware) && $middleware instanceof MiddlewareInterface,
+                            new \TypeError("'".get_class($middleware)."' must implement MiddlewareInterface")
+                        );
+                        yield $middleware;
+                    }
                 }
             };
 
@@ -81,14 +90,6 @@ final class SwooleApplicationFactory implements FactoryInterface
             $server->addlistener($ssl_addr, $ssl_port, SWOOLE_TCP | SWOOLE_SSL);
         }
         isset($swoole['options']) && $server->set($swoole['options']);
-
-        if (isset($swoole['user'])) {
-            $user = posix_getpwnam($swoole['user']);
-            if ($user) {
-                posix_setuid($user['uid']);
-                posix_setgid($user['gid']);
-            }
-        }
 
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
         $app = new SwooleApplication(

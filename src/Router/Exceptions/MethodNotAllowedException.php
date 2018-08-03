@@ -1,12 +1,13 @@
-<?php declare(strict_types=1);
-namespace Onion\Framework\Router\Exceptions;
+<?php
 
-use Onion\Framework\Router\Interfaces\Exception\NotAllowedException;
+declare(strict_types=1);
+
+namespace Ypf\Router\Exceptions;
+
+use Ypf\Router\Interfaces\Exception\NotAllowedException;
 
 /**
- * Class MethodNotAllowedException
- *
- * @package Onion\Framework\Router\Exceptions
+ * Class MethodNotAllowedException.
  */
 class MethodNotAllowedException extends \Exception implements NotAllowedException
 {
@@ -15,8 +16,8 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
     /**
      * MethodNotAllowedException constructor.
      *
-     * @param array $methods The methods which are supported by the current route
-     * @param int $code
+     * @param array           $methods  The methods which are supported by the current route
+     * @param int             $code
      * @param \Exception|null $previous
      */
     public function __construct(iterable $methods, $code = 0, \Exception $previous = null)
@@ -26,7 +27,7 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
     }
 
     /**
-     * Returns the list of methods supported by the route
+     * Returns the list of methods supported by the route.
      *
      * @return array
      */
@@ -36,11 +37,9 @@ class MethodNotAllowedException extends \Exception implements NotAllowedExceptio
     }
 
     /**
-     * Sets the methods that ARE supported by the method
+     * Sets the methods that ARE supported by the method.
      *
      * @param array $methods
-     *
-     * @return void
      */
     public function setAllowedMethods(iterable $methods): void
     {

@@ -15,6 +15,7 @@ use Ypf\Router\Route;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * A factory class solely responsible for assembling the Application
@@ -56,7 +57,15 @@ final class ApplicationFactory implements FactoryInterface
                     $route['middleware']
                 );
                 foreach ($stack as $middleware) {
-                    yield $container->get($middleware);
+                    if (is_string($middleware)) {
+                        yield $container->get($middleware);
+                    } else {
+                        assert(
+                            is_object($middleware) && $middleware instanceof MiddlewareInterface,
+                            new \TypeError("'".get_class($middleware)."' must implement MiddlewareInterface")
+                        );
+                        yield $middleware;
+                    }
                 }
             };
 

@@ -40,9 +40,6 @@ class Container implements ContainerInterface
 
     public function get($key)
     {
-        if (is_object($key)) {
-            return $key;
-        }
         $key = (string) $key;
 
         if (isset($this->dependencies->$key)) {
@@ -77,7 +74,7 @@ class Container implements ContainerInterface
 
                 return $this->dependencies->{$key};
             }
-            //echo $key;
+
             if (isset(static::$services[$key])) {
                 if (is_string(static::$services[$key]) and class_exists(static::$services[$key])) {
                     $this->dependencies->{$key} = $this->retrieveFromReflection(static::$services[$key]);

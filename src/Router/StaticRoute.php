@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
-namespace Onion\Framework\Router;
 
-use Onion\Framework\Http\Middleware\RequestHandler;
-use Onion\Framework\Router\Interfaces\RouteInterface;
+declare(strict_types=1);
+
+namespace Ypf\Router;
 
 class StaticRoute extends Route
 {

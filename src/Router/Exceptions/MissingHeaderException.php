@@ -1,5 +1,8 @@
-<?php declare(strict_types=1);
-namespace Onion\Framework\Router\Exceptions;
+<?php
+
+declare(strict_types=1);
+
+namespace Ypf\Router\Exceptions;
 
 class MissingHeaderException extends \RuntimeException
 {
