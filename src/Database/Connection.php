@@ -9,7 +9,7 @@ class Connection
     protected $lastsql = '';
     protected $dsn;
     protected $pdo;
-    protected $methods = array('from', 'data', 'field', 'table', 'orderBy', 'limit', 'offset', 'alias', 'having', 'groupBy', 'lock', 'distinct', 'auto');
+    protected $methods = array('from', 'data', 'field', 'table', 'orderby', 'limit', 'offset', 'alias', 'having', 'groupby', 'lock', 'distinct', 'auto');
 
     public function __construct($options = [])
     {
@@ -253,7 +253,7 @@ class Connection
         }
         //parse group
         if (isset($this->options['groupby'])) {
-            $sql .= 'GROUP BY '.$this->options['group'].' ';
+            $sql .= 'GROUP BY '.$this->options['groupby'].' ';
         }
         //parse having
         if (isset($this->options['having'])) {
@@ -261,7 +261,7 @@ class Connection
         }
         //parse order
         if (isset($this->options['orderby'])) {
-            $sql .= 'ORDER BY '.$this->options['order'].' ';
+            $sql .= 'ORDER BY '.$this->options['orderby'].' ';
         }
         //parse limit
         if (isset($this->options['limit'])) {
