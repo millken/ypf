@@ -47,6 +47,9 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
         foreach ($request->server as $name => $value) {
             $_SERVER[strtoupper($name)] = $value;
         }
+        foreach ($request->header as $name => $value) {
+            $_SERVER[str_replace('-', '_', strtoupper('HTTP_'.$name))] = $value;
+        }
         $_GET = $request->get ?? [];
         $_POST = $request->post ?? [];
         $_COOKIE = $request->cookie ?? [];
@@ -141,6 +144,10 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
             ]);
 
             return new Response(500);
+        } catch (\Exception $ex) {
+            $this->logger->critical($ex->getMessage(), [
+                'exception' => $ex,
+            ]);
         }
     }
 }

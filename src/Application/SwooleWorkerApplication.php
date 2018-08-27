@@ -137,8 +137,24 @@ class SwooleWorkerApplication implements ApplicationInterface, LoggerAwareInterf
                             }
                             Timer::after(1000 * $time_integer, function () use (&$table, $name, $v, &$container) {
                                 list($action, $cron_time) = $v;
-                                $obj = $container->get($action);
-                                $obj->run($container);
+                                register_shutdown_function(function () use ($container) {
+                                    $logger = $container->get(\Psr\Log\LoggerInterface::class);
+                                    $logger->error('shutdown', error_get_last());
+                                });
+                                go(function () use ($container, $action) {
+                                    try {
+                                        //$obj = $container->get($action);
+                                        //call_user_func_array([$container->get($action), 'run'], [$container]);
+                                        ob_start();
+                                        eval('call_user_func_array([$container->get($action), "run"], [$container]);');
+                                        $__capture__ = ob_get_contents();
+                                        ob_end_clean();
+                                        //$obj->run($container);
+                                    } catch (\Exception $e) {
+                                        $logger = $container->get(\Psr\Log\LoggerInterface::class);
+                                        $logger->error($e->getMessage());
+                                    }
+                                });
 
                                 if (isset($cron_ready[$name])) {
                                     unset($cron_ready[$name]);
