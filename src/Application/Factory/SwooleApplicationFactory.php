@@ -17,13 +17,9 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Swoole\Http\Server as SwooleHttpServer;
+use Swoole\Runtime as SwooleRuntime;
 
-/**
- * A factory class solely responsible for assembling the Application
- * object that is used as the entry point to all application
- * functionality. It represents the minimal requirements to assemble
- * a fully fledged application be it with or without modules used.
- */
 final class SwooleApplicationFactory implements FactoryInterface
 {
     /**
@@ -77,13 +73,17 @@ final class SwooleApplicationFactory implements FactoryInterface
             ));
         };
 
+        if (method_exists(SwooleRuntime::class, 'enableCoroutine')) {
+            SwooleRuntime::enableCoroutine(true);
+        }
+
         $swoole = $container->get('swoole');
         $listen = isset($swoole['listen']) ? $swoole['listen'] : '127.0.0.1:';
 
         list($address, $port) = explode(':', $listen, 2);
 
         $port = !empty($port) ? (int) $port : $this->getRandomPort($address);
-        $server = new \Swoole\Http\Server($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
+        $server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
         if (isset($swoole['ssl_listen'])) {
             list($ssl_addr, $ssl_port) = explode(':', $swoole['ssl_listen'], 2);
@@ -93,6 +93,7 @@ final class SwooleApplicationFactory implements FactoryInterface
 
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
         $app = new SwooleApplication(
+            $container->get('static-files'),
             $routes,
             $container->has(RequestHandlerInterface::class) ?
                 $container->get(RequestHandlerInterface::class) : null,

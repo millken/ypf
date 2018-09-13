@@ -17,12 +17,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 
-/**
- * A factory class solely responsible for assembling the Application
- * object that is used as the entry point to all application
- * functionality. It represents the minimal requirements to assemble
- * a fully fledged application be it with or without modules used.
- */
 final class ApplicationFactory implements FactoryInterface
 {
     /**
