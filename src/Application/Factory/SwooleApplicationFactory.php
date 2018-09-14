@@ -73,16 +73,17 @@ final class SwooleApplicationFactory implements FactoryInterface
             ));
         };
 
-        if (method_exists(SwooleRuntime::class, 'enableCoroutine')) {
-            SwooleRuntime::enableCoroutine(true);
-        }
-
         $swoole = $container->get('swoole');
         $listen = isset($swoole['listen']) ? $swoole['listen'] : '127.0.0.1:';
 
         list($address, $port) = explode(':', $listen, 2);
 
         $port = !empty($port) ? (int) $port : $this->getRandomPort($address);
+
+        $enableCoroutine = $swoole['enableCoroutine'] ?? false;
+        if ($enableCoroutine && method_exists(SwooleRuntime::class, 'enableCoroutine')) {
+            SwooleRuntime::enableCoroutine(true);
+        }
         $server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
         if (isset($swoole['ssl_listen'])) {

@@ -30,6 +30,13 @@ abstract class RestController extends Controller
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $logger = static::getContainer()->get(\Psr\Log\LoggerInterface::class);
+        $logger->debug('Request to {uri}, methood: {method}, class: {class}, rawContent: {rawContent}', [
+            'uri' => $request->getUri()->__toString(),
+            'method' => $request->getMethod(),
+            'class' => get_class($this),
+            'rawContent' => $request->getAttribute('rawContent'),
+        ]);
         $httpMethod = strtolower($request->getMethod());
         if ($httpMethod === 'head' && !method_exists('head')) {
             $httpMethod = 'get';
@@ -53,6 +60,13 @@ abstract class RestController extends Controller
                 $ref->getMethods(\ReflectionMethod::IS_PUBLIC)
             ));
         }
+        $logger->debug('Request to {uri} method: {method} class: {class} rawContent: {rawContent} response: {response}', [
+            'uri' => $request->getUri()->__toString(),
+            'method' => $request->getMethod(),
+            'class' => get_class($this),
+            'rawContent' => $request->getAttribute('rawContent'),
+            'response' => $response->getBody()->__toString(),
+        ]);
 
         return $response;
     }

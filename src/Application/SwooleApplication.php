@@ -12,6 +12,8 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareTrait;
 use Ypf\Router\Exceptions\NotFoundException;
+use Ypf\Router\Exceptions\MissingHeaderException;
+use Ypf\Router\Exceptions\MethodNotAllowedException;
 use GuzzleHttp\Psr7\Response;
 use Swoole\Http\Server;
 use Ypf\Swoole\StaticResourceHandler;
