@@ -153,8 +153,17 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
                 in_array(strtolower($request->getMethod()), ['get', 'head']) ? 503 : 501
             );
         } catch (\Throwable $ex) {
+            $trace = $ex->getTrace();
+            $trace = array_reverse($trace);
+            $traceString = '';
+            foreach ((array) $trace as $k => $v) {
+                if (isset($v['file'])) {
+                    $traceString .= '#'.$k.' '.$v['file'].'('.$v['line'].'): '.
+                    (isset($v['class']) ? $v['class'].'->' : '').$v['function']."\n";
+                }
+            }
             $this->logger->critical($ex->getMessage(), [
-                'exception' => $ex,
+                'trace' => $traceString,
             ]);
 
             return new Response(500);
