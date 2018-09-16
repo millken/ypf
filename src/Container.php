@@ -34,6 +34,9 @@ class Container implements ContainerInterface
 
     public function get($key)
     {
+        if (is_object($key)) {
+            return $key;
+        }
         $key = (string) $key;
 
         if (isset($this->dependencies->$key)) {

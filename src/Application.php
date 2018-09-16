@@ -30,7 +30,13 @@ class Application
         try {
             static::$container->add('request', $request);
 
-            return static::$requestHandler->handle($request);
+            // $dispatcher = new \Middleland\Dispatcher(static::$container->get('middleware'));
+
+            // return $dispatcher->dispatch($request);
+            $dispatcher = new \Moon\HttpMiddleware\Delegate(static::$container->get('middleware'), function () {}, static::$container);
+
+            return $dispatcher->handle($request);
+            //return static::$requestHandler->handle($request);
         } catch (Exception $exception) {
             throw $exception;
         }
