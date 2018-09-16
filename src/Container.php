@@ -5,26 +5,15 @@ declare(strict_types=1);
 namespace Ypf;
 
 use Psr\Container\ContainerInterface;
-use Ypf\Exceptions\ContainerException;
-use Ypf\Exceptions\ContainerValueNotFoundException;
-use Ypf\Interfaces\FactoryInterface;
 
-/**
- * Class Container.
- */
 class Container implements ContainerInterface
 {
     private $dependencies = [];
-    /** @var ContainerInterface */
+
     private static $services = [];
 
     protected static $instances = null;
 
-    /**
-     * Container constructor.
-     *
-     * @param object $dependencies
-     */
     public function __construct(array $services)
     {
         static::$services = $services;
@@ -38,6 +27,11 @@ class Container implements ContainerInterface
         return static::$instances;
     }
 
+    public function add(string $id, $concrete = null)
+    {
+        static::$services[$id] = $concrete;
+    }
+
     public function get($key)
     {
         $key = (string) $key;
@@ -47,28 +41,6 @@ class Container implements ContainerInterface
         }
 
         try {
-            if ($key == FactoryInterface::class) {
-                $name = static::$services[$key];
-                assert(
-                    is_string($name),
-                    new ContainerException(
-                        "Registered factory for '{$key}' must be a valid FQCN, ".gettype($key).' given'
-                    )
-                );
-
-                $factory = (new \ReflectionClass($name))
-                    ->newInstance();
-
-                assert(
-                    $factory instanceof FactoryInterface,
-                    new ContainerException(
-                        "Factory for '{$key}' does not implement Interfaces\\FactoryInterface"
-                    )
-                );
-
-                return $factory->build($this);
-            }
-
             if (class_exists($key)) {
                 $this->dependencies->{$key} = $this->retrieveFromReflection($key);
 
@@ -91,19 +63,12 @@ class Container implements ContainerInterface
                 }
             }
         } catch (\RuntimeException $ex) {
-            throw new ContainerException($ex->getMessage(), 0, $ex);
+            throw new \Exception($ex->getMessage(), 0, $ex);
         }
 
-        throw new ContainerValueNotFoundException(sprintf('Unable to resolve "%s"', $key));
+        throw new \Exception(sprintf('Unable to resolve "%s"', $key));
     }
 
-    /**
-     * @param string $className
-     *
-     * @return mixed|object
-     *
-     * @throws ContainerErrorException
-     */
     private function retrieveFromReflection(string $className)
     {
         $classReflection = new \ReflectionClass($className);
@@ -114,14 +79,6 @@ class Container implements ContainerInterface
         return $classReflection->newInstance();
     }
 
-    /**
-     * Returns true if the container can return an entry for the given identifier.
-     * Returns false otherwise.
-     *
-     * @param string $key identifier of the entry to look for
-     *
-     * @return bool
-     */
     public function has($key): bool
     {
         $key = (string) $key;
