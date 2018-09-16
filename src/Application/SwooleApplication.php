@@ -16,7 +16,6 @@ use Ypf\Router\Exceptions\MissingHeaderException;
 use Ypf\Router\Exceptions\MethodNotAllowedException;
 use GuzzleHttp\Psr7\Response;
 use Swoole\Http\Server;
-use Ypf\Swoole\StaticResourceHandler;
 
 class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
 {
@@ -27,17 +26,12 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
      */
     protected $routes = [];
 
-    private $staticResourceHandler;
     private $requestHandler;
 
     use LoggerAwareTrait;
 
-    public function __construct(array $staticFiles, iterable $routes, RequestHandlerInterface $rootHandler = null, Server $server)
+    public function __construct(iterable $routes, RequestHandlerInterface $rootHandler = null, Server $server)
     {
-        //check static files
-        if ($staticFiles) {
-            $this->staticResourceHandler = new StaticResourceHandler($staticFiles);
-        }
         $this->routes = $routes;
         $this->requestHandler = $rootHandler;
         $this->server = $server;
@@ -51,12 +45,6 @@ class SwooleApplication implements ApplicationInterface, LoggerAwareInterface
 
     public function onRequest(\Swoole\Http\Request $request, \Swoole\Http\Response $response): void
     {
-        if ($this->staticResourceHandler) {
-            $result = $this->staticResourceHandler->handle($request, $response);
-            if ($result) {
-                return;
-            }
-        }
         $_SERVER = [];
         foreach ($request->server as $name => $value) {
             $_SERVER[strtoupper($name)] = $value;

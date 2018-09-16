@@ -94,7 +94,6 @@ final class SwooleApplicationFactory implements FactoryInterface
 
         $routes = new CallbackCollection($container->get('routes'), $routeCallback);
         $app = new SwooleApplication(
-            $container->has('static-files') ? $container->get('static-files') : [],
             $routes,
             $container->has(RequestHandlerInterface::class) ?
                 $container->get(RequestHandlerInterface::class) : null,
