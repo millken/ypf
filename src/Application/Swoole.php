@@ -4,23 +4,21 @@ declare(strict_types=1);
 
 namespace Ypf\Application;
 
-use Psr\Container\ContainerInterface as Container;
 use Swoole\Http\Server as SwooleHttpServer;
 use Swoole\Http\Request as SwooleHttpRequest;
 use Swoole\Http\Response as SwooleHttpResponse;
 use GuzzleHttp\Psr7\ServerRequest;
-use Ypf\Application;
 
 class Swoole
 {
     private $server = null;
-    private $container;
+    private $app;
 
-    public function build(Container $container)
+    public function build($app)
     {
         $address = '127.0.0.1';
         $port = 7000;
-        $this->container = $container;
+        $this->app = $app;
         $this->server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
         return $this;
@@ -47,7 +45,7 @@ class Swoole
         }
         $request = $request->withAttribute('rawContent', $content);
 
-        $response = Application::handleRequest($request);
+        $response = $this->app->handleRequest($request);
 
         $status = $response->getStatusCode();
         $swooleResponse->status($response->getStatusCode());

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ypf\Http;
 
+use RuntimeException;
+use InvalidArgumentException;
 use Psr\Http\Message;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -30,16 +32,15 @@ final class RequestHandler implements RequestHandlerInterface
         if ($this->middleware->valid()) {
             $middleware = Application::getContainer()->get($this->middleware->current());
 
-            assert($middleware instanceof MiddlewareInterface, new \TypeError('Invalid middleware type'));
+            if (!$middleware instanceof MiddlewareInterface) {
+                throw new InvalidArgumentException(sprintf('No valid middleware provided (%s)', is_object($middleware) ? get_class($middleware) : gettype($middleware)));
+            }
             $this->middleware->next();
 
             return $middleware->process($request, $this);
         }
-
-        $this->middleware->rewind();
-
         if (null === $this->response) {
-            throw new \RuntimeException('No base response provided');
+            throw new RuntimeException('No base response provided');
         }
 
         return $this->response;
