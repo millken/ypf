@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Ypf\Application;
 
 use GuzzleHttp\Psr7\ServerRequest;
+use Ypf\Application;
 
 class Cgi
 {
-    private $app;
-
-    public function build($app)
+    public function build()
     {
-        $this->app = $app;
-
         return $this;
     }
 
@@ -21,7 +18,8 @@ class Cgi
     {
         $request = ServerRequest::fromGlobals();
         $request = $request->withAttribute('rawContent', file_get_contents('php://input'));
-        $response = $this->app->handleRequest($request);
+        $response = Application::getInstance()->handleRequest($request);
+
         $status = $response->getStatusCode();
         $reasonPhrase = $response->getReasonPhrase();
         header(

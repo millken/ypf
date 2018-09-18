@@ -59,8 +59,11 @@ class Application implements LoggerAwareInterface
                 'exception' => $ex,
             ]);
 
-            $headers = ['server' => 'YPF-'.static::VERSION];
-            $payload = 'HTTP Error 500 Internal Server Error';
+            $headers = [
+                'server' => 'YPF-'.static::VERSION,
+                'content-type' => 'text/plain; charset=utf-8',
+            ];
+            $payload = 'Unexpected Server Error';
 
             return new Response(500, $headers, $payload);
         }
@@ -70,6 +73,6 @@ class Application implements LoggerAwareInterface
     {
         $server = $this->container->has('factory') ? $this->container->get('factory') :
         new DefaultFactory();
-        $server->build($this)->run();
+        $server->build()->run();
     }
 }
