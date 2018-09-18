@@ -9,30 +9,27 @@ use ReflectionClass;
 use Ypf\Application;
 use Ypf\Controller\CronWorker;
 use Cron\CronExpression;
-use Swoole\Process as SwooleProcess;
 
 class CronManager
 {
     private $queue;
     private $job;
 
-    public function process()
+    public function __construct()
     {
-        $process = new SwooleProcess([$this, 'start'], false, 1);
-        $process->start();
+        if (!class_exists(CronExpression::class)) {
+            throw new Exception('please use composer require dragonmantank/cron-expression');
+        }
     }
 
-    public function start(SwooleProcess $worker)
+    public function process()
     {
-        global $argv;
-        $processName = "php {$argv[0]}: cron manager";
-        \swoole_set_process_name($processName);
         $workers = Application::getContainer()->get('workers');
         foreach ($workers as $worker) {
             $className = $worker[0];
             $classReflection = new ReflectionClass($className);
             if (!$classReflection->isSubclassOf(CronWorker::class)) {
-                throw new Exception('cron worker mustbe extends '.CronWorker::class);
+                throw new Exception('cron worker mustbe extends \Ypf\Controller\\'.CronWorker::class);
             }
             if (!isset($worker[1])) {
                 go(function () use ($classReflection) {

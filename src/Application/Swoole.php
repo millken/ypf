@@ -12,12 +12,16 @@ use Ypf\Application;
 use Ypf\Swoole\CronManager;
 use GuzzleHttp\Psr7\ServerRequest;
 use function swoole_set_process_name;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class Swoole
+class Swoole implements LoggerAwareInterface
 {
     private $server = null;
     protected $workers;
     protected static $instances = null;
+
+    use LoggerAwareTrait;
 
     public function build()
     {
@@ -29,6 +33,9 @@ class Swoole
         $this->server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
         $this->server->set($options);
+        $logger = Application::getContainer()->get('logger');
+        $this->setLogger($logger);
+
         static::$instances = &$this;
 
         return $this;
@@ -37,6 +44,11 @@ class Swoole
     public static function getInstance()
     {
         return static::$instances;
+    }
+
+    public static function getServer()
+    {
+        return static::$instances->server;
     }
 
     public function onRequest(SwooleHttpRequest $request, SwooleHttpResponse $swooleResponse): void
@@ -72,18 +84,16 @@ class Swoole
 
     public function onTask(SwooleHttpServer $server, int $task_id, int $source, string $data)
     {
-        //echo sprintf("pid=%d, task_id=%d, from_id=%d, data=%s\n", getmypid(), $task_id, $source, $data);
+        // $this->logger->debug('task receive pid : {pid}, task_id : {task_id}, from_id= {from_id}, data= {data}', [
+        //     'pid' => getmypid(),
+        //     'task_id' => $task_id,
+        //     'from_id' => $source,
+        //     'data' => $data,
+        //     ]);
 
-        $data = SwooleSerialize::unpack($data);
-        if (!isset($data['name'])) {
-            return;
-        }
-        $name = $data['name'];
-        assert(
-            $this->workers[$name],
-            new \UnexpectedValueException("No task worker registered for '{$name}")
-        );
-        $result = $workers[$name]->run($data['payload']);
+        $task = SwooleSerialize::unpack($data);
+        $unit = Application::getContainer()->get($task->getClass());
+        $result = $unit->run($task->getPayload());
         $server->finish(SwooleSerialize::pack($result, 1));
 
         return $result;
