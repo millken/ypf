@@ -21,10 +21,14 @@ class Swoole
 
     public function build()
     {
-        $address = '127.0.0.1';
-        $port = 7000;
+        $container = Application::getContainer();
+        $swoole = $container->has('swoole') ? $container->get('swoole') : [];
+        $address = $swoole['server']['address'] ?? '127.0.0.1';
+        $port = $swoole['server']['port'] ?? $this->getRandomPort($address);
+        $options = $swoole['options'] ?? [];
         $this->server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
+        $this->server->set($options);
         static::$instances = &$this;
 
         return $this;
@@ -135,5 +139,18 @@ class Swoole
         $this->server->on('WorkerStart', [$this, 'onWorkerStart']);
         $this->server->on('Start', [$this, 'onStart']);
         $this->server->start();
+    }
+
+    private function getRandomPort($address): int
+    {
+        while (true) {
+            $port = mt_rand(1025, 65000);
+            $fp = @fsockopen($address, $port, $errno, $errstr, 0.1);
+            if (!$fp) {
+                break;
+            }
+        }
+
+        return $port;
     }
 }

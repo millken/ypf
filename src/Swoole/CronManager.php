@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace Ypf\Swoole;
 
+use Exception;
+use ReflectionClass;
 use Ypf\Application;
+use Ypf\Controller\CronWorker;
+use Cron\CronExpression;
 use Swoole\Process as SwooleProcess;
 
 class CronManager
 {
     private $queue;
-    private $ready;
+    private $job;
 
     public function process()
     {
-        echo 'cronmanager';
         $process = new SwooleProcess([$this, 'start'], false, 1);
-        $pid = $process->start();
+        $process->start();
     }
 
     public function start(SwooleProcess $worker)
@@ -24,7 +27,21 @@ class CronManager
         global $argv;
         $processName = "php {$argv[0]}: cron manager";
         \swoole_set_process_name($processName);
-        $this->queue = Application::getContainer()->get('workers');
+        $workers = Application::getContainer()->get('workers');
+        foreach ($workers as $worker) {
+            $className = $worker[0];
+            $classReflection = new ReflectionClass($className);
+            if (!$classReflection->isSubclassOf(CronWorker::class)) {
+                throw new Exception('cron worker mustbe extends '.CronWorker::class);
+            }
+            if (!isset($worker[1])) {
+                go(function () use ($classReflection) {
+                    $classReflection->newInstance()->run();
+                });
+            } else {
+                $this->queue[] = [$classReflection->newInstance(), $worker[1]];
+            }
+        }
         \swoole_timer_tick(1000, [$this, 'tick']);
     }
 
@@ -32,15 +49,25 @@ class CronManager
     {
         $queue = $this->queue;
         foreach ($queue as $key => $val) {
-            \swoole_timer_tick(1000 * $val['cron'], function () use ($key, $val) {
+            $crontab = CronExpression::isValidExpression($val[1]);
+            if (!$crontab) {
+                $timeSecond = intval($val[1]);
+            } else {
+                $cron = CronExpression::factory($val[1]);
+                $nextRunTime = $cron->getNextRunDate()->getTimestamp();
+                $timeSecond = intval($nextRunTime - time());
+            }
+            if ($timeSecond < 1) {
+                continue;
+            }
+
+            \swoole_timer_after(1000 * $timeSecond, function () use ($key, $val) {
                 $this->queue[$key] = $val;
-                unset($this->ready[$key]);
-                $obj = new $val['class']();
-                $obj->$val['method']();
+                unset($this->job[$key]);
+                go(function () use ($val) {$val[0]->run(); });
             });
             unset($this->queue[$key]);
-            $this->ready[$key] = $val;
+            $this->job[$key] = $val;
         }
-        echo 'tick'.PHP_EOL;
     }
 }
