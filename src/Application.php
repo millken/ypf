@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Ypf;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Ypf\Http\RequestHandler;
 use GuzzleHttp\Psr7\Response;
 use Ypf\Application\Cgi as DefaultFactory;
 use Psr\Log\LoggerAwareInterface;
@@ -46,14 +45,11 @@ class Application implements LoggerAwareInterface
     public function handleRequest(ServerRequestInterface $request)
     {
         try {
-            $this->container->add('request', $request);
             $middleware = $this->container->has('middleware') ?
              $this->container->get('middleware') : [];
-            $response = $this->container->has('response') ?
-            $this->container->get('response') : new Response();
-            $requestHandler = new RequestHandler($middleware, $response);
+            $dispatcher = new Dispatcher($middleware);
 
-            return $requestHandler->handle($request);
+            return $dispatcher->dispatch($request);
         } catch (\Throwable $ex) {
             $this->logger->critical($ex->getMessage(), [
                 'exception' => $ex,

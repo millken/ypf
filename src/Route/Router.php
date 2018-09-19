@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ypf\Route;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Ypf\Route\Exception\NotFoundException;
 
@@ -61,11 +60,12 @@ class Router
         return $this->map('DELETE', $path, $handler);
     }
 
-    public function dispatch(ServerRequestInterface $request): ResponseInterface
+    public function dispatch(ServerRequestInterface $request): Route
     {
         $routes = array_merge($this->staticRoutes, $this->regexpRoutes);
         foreach ($routes as $route) {
             if ($route->isMatch($request)) {
+                return $route;
                 foreach ($route->getParameters() as $attr => $value) {
                     $request = $request->withAttribute($attr, $value);
                 }
