@@ -23,101 +23,77 @@ composer require millken/ypf
 ## Requirements
 
 1. PHP 7.2+
-2. Swoole 2.0+ (Optional but recommended)
+2. Swoole 4.2+ (Optional but recommended)
 
-Swoole Http Server
+## Usage
+
+> php swoole.php
 
 ```php
+//swoole.php
 
 require './vendor/autoload.php';
+use GuzzleHttp\Psr7\Response;
 
-use Ypf\Application\Factory\SwooleApplicationFactory;
-use Ypf\Interfaces\FactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Slim\Views\PhpRenderer;
+$router = new Ypf\Route\Router();
+$router->map('GET', '/', function ($request) {
+    return 'test';
+});
+$router->map('GET', '/hello/{name}?', function ($request) {
+    $name = ucwords($request->getAttribute('name', 'World!'));
+
+    return new Response(200, [], 'hello '.$name);
+});
 
 $services = [
-    FactoryInterface::class => SwooleApplicationFactory::class,
+    'factory' => Ypf\Application\Swoole::class,
+
     'swoole' => [
-        'listen' => '*:7000',
-        'options' => [
+        'server' => [
+            'address' => '127.0.0.1',
+            'port' => 7000,
         ],
-    ],
-    'routes' => [
-        [
-            'pattern' => '/',
-            'middleware' => [
-                Middleware\RewriteMiddleware::class,
-                Controller\Index::class,
-            ],
-            'methods' => ['GET'],
-        ], [
-            'pattern' => '/greet{/{name}}?',
-            'middleware' => [
-                Middleware\BenchmarkMiddleware::class,
-                Controller\Greeter::class,
-            ],
-            'methods' => ['POST', 'GET', 'PUT'],
-        ], [
-            'pattern' => '/text{/{name}}?',
-            'middleware' => [
-                Controller\Text::class,
-            ],
+        'options' => [
+            'dispatch_mode' => 1,
         ],
     ],
     'middleware' => [
+        new Ypf\Route\Middleware($router),
     ],
-    ResponseInterface::class => GuzzleHttp\Psr7\Response::class,
 ];
 
-$services['db'] = function () {
-    $config = [
-        ...
-    ];
-    $db = new Ypf\Database\Connection($config);
+$app = new Ypf\Application($services);
 
-    return $db;
-};
-
-$services[\Psr\Log\LoggerInterface::class] = function () {
-    $logger = new Monolog\Logger('test');
-    $logger->pushProcessor(new Monolog\Processor\UidProcessor());
-    $logger->pushHandler(new Monolog\Handler\StreamHandler('php://stdout', Monolog\Logger::DEBUG));
-
-    return $logger;
-};
-$services['view'] = new PhpRenderer('./templates');
-
-$container = new Ypf\Container($services);
-
-$container->get(FactoryInterface::class)->run();
-
+$app->run();
 ```
 
-Swoole Worker
+> php -S 127.0.0.1:7000 cgi.php #cgi mode
 
 ```php
-require './vendor/autoload.php';
+//swoole.php
 
-use Ypf\Application\Factory\SwooleWorkerApplicationFactory;
-use Ypf\Interfaces\FactoryInterface;
+require './vendor/autoload.php';
+use GuzzleHttp\Psr7\Response;
+
+$router = new Ypf\Route\Router();
+$router->map('GET', '/', function ($request) {
+    return 'test';
+});
+$router->map('GET', '/hello/{name}?', function ($request) {
+    $name = ucwords($request->getAttribute('name', 'World!'));
+
+    return new Response(200, [], 'hello '.$name);
+});
 
 $services = [
-    FactoryInterface::class => SwooleWorkerApplicationFactory::class,
-    'worker' => [
-        'single' => [
-            Worker\SingleTest::class,
-        ],
-        'cron' => [
-            [Worker\CronTest::class, 10], //Every 10 seconds
-            [Worker\CronTest::class, '* * * * *'],
-        ]
+    'middleware' => [
+        new Ypf\Route\Middleware($router),
     ],
 ];
-$container = new Ypf\Container($services);
 
-$container->get(FactoryInterface::class)->run();
+$app = new Ypf\Application($services);
 
+$app->run();
 ```
 
 See the full [example](https://github.com/millken/ypf_demo)

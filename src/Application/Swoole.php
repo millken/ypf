@@ -14,6 +14,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use function swoole_set_process_name;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Ypf\Log\VoidLogger;
 
 class Swoole implements LoggerAwareInterface
 {
@@ -33,7 +34,8 @@ class Swoole implements LoggerAwareInterface
         $this->server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
 
         $this->server->set($options);
-        $logger = Application::getContainer()->get('logger');
+        $logger = $container->has('logger') ?
+            $container->get('logger') : new VoidLogger();
         $this->setLogger($logger);
 
         static::$instances = &$this;
