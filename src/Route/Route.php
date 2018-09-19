@@ -118,6 +118,12 @@ class Route
     public function isMatch(ServerRequestInterface $request): bool
     {
         $path = $request->getUri()->getPath();
+        //match hostname
+        if ($this->host) {
+            if ($request->getUri()->getHost() !== strtolower($this->host)) {
+                return false;
+            }
+        }
         if ($this->isStaticRoute()) {
             return $this->getPath() == $path;
         } else {
