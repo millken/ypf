@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Ypf\Route;
 
+use GuzzleHttp\Psr7\Response;
+use Ypf\Route\Exception\NotFoundException;
+use Ypf\Route\Exception\MethodNotAllowedException;
+use Ypf\Route\Exception\MissingHeaderException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -21,12 +25,20 @@ class Middleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $route = $this->router->dispatch($request);
-        foreach ($route->getParameters() as $attr => $value) {
-            $request = $request->withAttribute($attr, $value);
-        }
-        $request->withAttribute($this->attribute, $route->getCallable());
+        try {
+            $route = $this->router->dispatch($request);
+            foreach ($route->getParameters() as $attr => $value) {
+                $request = $request->withAttribute($attr, $value);
+            }
+            $request = $request->withAttribute($this->attribute, $route->getCallable());
 
-        return $handler->handle($request);
+            return $handler->handle($request);
+        } catch (NotFoundException $ex) {
+            return new Response(404);
+        } catch (MethodNotAllowedException $ex) {
+            return new Response(405);
+        } catch (MissingHeaderException $ex) {
+            return new Response(400);
+        }
     }
 }

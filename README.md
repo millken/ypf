@@ -66,6 +66,18 @@ $app = new Ypf\Application($services);
 
 $app->run();
 ```
+swoole performance
+```
+ wrk -t 20 -c 200 -d 30s "http://127.0.0.1:8080/"
+Running 30s test @ http://127.0.0.1:8080/
+  20 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     2.16ms    1.94ms  40.97ms   88.56%
+    Req/Sec     5.50k   521.94    19.49k    86.64%
+  3289431 requests in 30.10s, 501.93MB read
+Requests/sec: 109285.69
+Transfer/sec:     16.68MB
+```
 
 > php -S 127.0.0.1:7000 cgi.php #cgi mode
 
