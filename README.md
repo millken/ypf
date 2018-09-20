@@ -66,8 +66,10 @@ $app = new Ypf\Application($services);
 
 $app->run();
 ```
+
 swoole performance
-```
+
+```bash
  wrk -t 20 -c 200 -d 30s "http://127.0.0.1:8080/"
 Running 30s test @ http://127.0.0.1:8080/
   20 threads and 200 connections

@@ -66,11 +66,6 @@ class Router
         foreach ($routes as $route) {
             if ($route->isMatch($request)) {
                 return $route;
-                foreach ($route->getParameters() as $attr => $value) {
-                    $request = $request->withAttribute($attr, $value);
-                }
-
-                return $route->handle($request);
             }
         }
 

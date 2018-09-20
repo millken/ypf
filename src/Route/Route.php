@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Ypf\Route;
 
-use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use Ypf\Route\Exception\MissingHeaderException;
-use Ypf\Route\Exception\MethodNotAllowedException;
 
 class Route
 {
@@ -131,24 +127,5 @@ class Route
         }
 
         return false;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        foreach ($this->getHeaders() as $header => $required) {
-            if ((bool) $required && !$request->hasHeader($header)) {
-                throw new MissingHeaderException($header);
-            }
-        }
-        if (!$this->hasMethod($request->getMethod())) {
-            throw new MethodNotAllowedException($this->getMethod());
-        }
-        $response = call_user_func($this->getCallable(), $request);
-
-        if (is_string($response)) {
-            $response = new Response(200, [], $response);
-        }
-
-        return $response;
     }
 }

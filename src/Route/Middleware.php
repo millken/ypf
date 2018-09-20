@@ -27,6 +27,15 @@ class Middleware implements MiddlewareInterface
     {
         try {
             $route = $this->router->dispatch($request);
+            foreach ($route->getHeaders() as $header => $required) {
+                if ((bool) $required && !$request->hasHeader($header)) {
+                    throw new MissingHeaderException($header);
+                }
+            }
+            if (!$route->hasMethod($request->getMethod())) {
+                throw new MethodNotAllowedException($route->getMethod());
+            }
+
             foreach ($route->getParameters() as $attr => $value) {
                 $request = $request->withAttribute($attr, $value);
             }
