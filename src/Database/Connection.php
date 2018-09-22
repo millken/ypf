@@ -72,6 +72,10 @@ class Connection
 
     protected function tableQuote($table)
     {
+        if (strpos($table, '.') !== false) {
+            return '"'.str_replace('.', '"."', $table).'"';
+        }
+
         return '"'.static::$option['prefix'].$table.'"';
     }
 
