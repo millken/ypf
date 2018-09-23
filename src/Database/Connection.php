@@ -224,7 +224,7 @@ class Connection
         return $where_clause;
     }
 
-    public function select(string $table, string $field, array $where)
+    public function select(string $table, string $field = '*', array $where = [])
     {
         $cloumnMap = ['*'];
         if ($field !== '*') {

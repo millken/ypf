@@ -12,8 +12,8 @@ use Cron\CronExpression;
 
 class CronManager
 {
-    private $queue;
-    private $job;
+    private $queue = [];
+    private $job = [];
 
     public function __construct()
     {
