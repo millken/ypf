@@ -31,5 +31,6 @@
     },
     "suggest": {
         "dragonmantank/cron-expression": "support cron worker",
-        "ext-swoole": "swoole extension"
+        "ext-swoole": "swoole extension",
+        "ext-yac": "shared memory cache extension"
     }}
