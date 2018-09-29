@@ -30,8 +30,13 @@ class Swoole implements LoggerAwareInterface
         $swoole = $container->has('swoole') ? $container->get('swoole') : [];
         $address = $swoole['server']['address'] ?? '127.0.0.1';
         $port = $swoole['server']['port'] ?? $this->getRandomPort($address);
+        $sslAddress = $swoole['server']['ssl_address'] ?? '';
+        $sslPort = $swoole['server']['ssl_port'] ?? 443;
         $options = $swoole['options'] ?? [];
         $this->server = new SwooleHttpServer($address, $port, SWOOLE_PROCESS, SWOOLE_TCP);
+        if ($sslAddress) {
+            $this->server->addlistener($sslAddress, $sslPort, SWOOLE_TCP | SWOOLE_SSL);
+        }
 
         $this->server->set($options);
         $logger = $container->has('logger') ?
