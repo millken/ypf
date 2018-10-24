@@ -340,7 +340,7 @@ class Connection
         return $this->lastsql;
     }
 
-    private function aggregate(string $type, string $table, string $field, array $where)
+    private function aggregate(string $type, string $table, string $field = '*', array $where = [])
     {
         $field = $field == '*' ? '*' : $this->columnQuote($field);
         $query = 'SELECT '.strtoupper($type).'('.$field.') FROM '
