@@ -239,8 +239,12 @@ class Connection
         $query = 'SELECT '.implode(',', $cloumnMap).' FROM '
         .$this->tableQuote($table).$this->whereClause($where, $data);
 
-        $stmt = $this->query($query, $data);
+        return $this->fetchAll($query, $data);
+    }
 
+    public function fetchAll($query, $data = [])
+    {
+        $stmt = $this->query($query, $data);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $result;
