@@ -13,7 +13,7 @@ use Ypf\Log\VoidLogger;
 
 class Application implements LoggerAwareInterface
 {
-    const VERSION = '3.0.6';
+    const VERSION = '3.0.7';
 
     protected $container;
 
