@@ -112,7 +112,7 @@ class Route
 
     public function hasMethod(string $method): bool
     {
-        return $this->getMethod() === strtoupper($method);
+        return strstr($this->getMethod(), strtoupper($method)) !== false;
     }
 
     public function isMatch(ServerRequestInterface $request): bool
