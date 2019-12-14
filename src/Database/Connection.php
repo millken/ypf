@@ -23,10 +23,10 @@ class Connection
             throw new InvalidArgumentException('options must be array');
         }
         $default_options = [
-            'dbtype' => 'mysql',
+            'driver' => 'mysql',
             'host' => '127.0.0.1',
             'port' => 3306,
-            'dbname' => 'test',
+            'database' => 'test',
             'username' => 'root',
             'password' => '',
             'charset' => 'utf8',
@@ -35,7 +35,7 @@ class Connection
             'presistent' => false,
         ];
         static::$option = array_merge($default_options, $options);
-        $this->dsn = $options['dbtype'].':host='.static::$option['host'].';dbname='.static::$option['dbname'].
+        $this->dsn = $options['driver'].':host='.static::$option['host'].';dbname='.static::$option['database'].
         ';port='.static::$option['port'];
         if (isset($options['dsn'])) {
             $this->dsn = $options['dsn'];
@@ -100,7 +100,7 @@ class Connection
     public function id()
     {
         $id = 0;
-        switch (static::$option['dbtype']) {
+        switch (static::$option['driver']) {
             case 'oracle':
             $id = 0;
             break;
@@ -166,6 +166,9 @@ class Connection
 
     protected function mapKey()
     {
+        if ($this->guid >= PHP_INT_MAX) {
+            $this->guid = 0;
+        }
         return ':var_'.$this->guid++;
     }
 
@@ -278,7 +281,7 @@ class Connection
                 }
                 if (
                     isset($where['LIMIT']) &&
-                    in_array(static::$option['dbtype'], ['oracle', 'mssql'])
+                    in_array(static::$option['driver'], ['oracle', 'mssql'])
                 ) {
                     $LIMIT = $where['LIMIT'];
                     if (is_numeric($LIMIT)) {
@@ -294,7 +297,7 @@ class Connection
                 }
             }
             if (isset($where['LIMIT'])
-            && !in_array(static::$option['dbtype'], ['oracle', 'mssql'])) {
+            && !in_array(static::$option['driver'], ['oracle', 'mssql'])) {
                 $LIMIT = $where['LIMIT'];
                 if (is_numeric($LIMIT)) {
                     $where_clause .= ' LIMIT '.$LIMIT;

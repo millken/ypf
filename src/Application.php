@@ -52,7 +52,7 @@ class Application implements LoggerAwareInterface
             return $dispatcher->dispatch($request);
         } catch (\Throwable $ex) {
             $this->logger->critical($ex->getMessage(), [
-                'exception' => $ex,
+                'trace' => $ex->getTraceAsString(),
             ]);
 
             $headers = [
