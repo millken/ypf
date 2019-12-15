@@ -96,11 +96,12 @@ class Middleware implements MiddlewareInterface
         } else {
             $this->id = null;
         }
+        $session = $_SESSION;
 
         $request = $request->withAttribute('session', new Session($_SESSION));
         $response = $handler->handle($request);
 
-        if (!empty($_SESSION) && $this->id) {
+        if ($session !== $_SESSION && $this->id) {
             $this->cache->set(substr($this->id, 0, 32), $_SESSION, $this->cache_expire * 60);
         }
         if (!$this->id) {

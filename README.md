@@ -70,8 +70,8 @@ $app->run();
 swoole performance
 
 ```bash
- wrk -t 20 -c 200 -d 30s "http://127.0.0.1:8080/"
-Running 30s test @ http://127.0.0.1:8080/
+ wrk -t 20 -c 200 -d 30s "http://127.0.0.1:7000/"
+Running 30s test @ http://127.0.0.1:7000/
   20 threads and 200 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     2.16ms    1.94ms  40.97ms   88.56%
@@ -84,7 +84,7 @@ Transfer/sec:     16.68MB
 > php -S 127.0.0.1:7000 cgi.php #cgi mode
 
 ```php
-//swoole.php
+//cgi.php
 
 require './vendor/autoload.php';
 use GuzzleHttp\Psr7\Response;
