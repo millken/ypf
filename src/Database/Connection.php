@@ -161,7 +161,7 @@ class Connection
             $stack[] = is_int($value) ? $value : $this->pdo->quote($value);
         }
 
-        return implode($stack, ',');
+        return implode(',', $stack);
     }
 
     protected function mapKey()
@@ -248,7 +248,7 @@ class Connection
                     foreach ($GROUP as $column => $value) {
                         $stack[] = $this->columnQuote($value);
                     }
-                    $where_clause .= ' GROUP BY '.implode($stack, ',');
+                    $where_clause .= ' GROUP BY '.implode(',', $stack);
                 } elseif ($raw = $this->buildRaw($GROUP, $map)) {
                     $where_clause .= ' GROUP BY '.$raw;
                 } else {
@@ -275,7 +275,7 @@ class Connection
                             $stack[] = $this->columnQuote($value);
                         }
                     }
-                    $where_clause .= ' ORDER BY '.implode($stack, ',');
+                    $where_clause .= ' ORDER BY '.implode(',',$stack);
                 } else {
                     $where_clause .= ' ORDER BY '.$this->columnQuote($ORDER);
                 }

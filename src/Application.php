@@ -1,14 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace Ypf;
 
-use Psr\Http\Message\ServerRequestInterface;
 use GuzzleHttp\Psr7\Response;
-use Ypf\Application\Cgi as DefaultFactory;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Ypf\Application\Cgi as DefaultFactory;
 use Ypf\Log\VoidLogger;
 
 class Application implements LoggerAwareInterface
@@ -26,7 +26,7 @@ class Application implements LoggerAwareInterface
 
         $this->container = $container;
         $logger = $container->has('logger') ?
-            $container->get('logger') : new VoidLogger();
+        $container->get('logger') : new VoidLogger();
         $this->setLogger($logger);
 
         static::$instances = &$this;
@@ -46,7 +46,7 @@ class Application implements LoggerAwareInterface
     {
         try {
             $middleware = $this->container->has('middleware') ?
-             $this->container->get('middleware') : [];
+            $this->container->get('middleware') : [];
             $dispatcher = new Dispatcher($middleware);
 
             return $dispatcher->dispatch($request);
@@ -56,10 +56,10 @@ class Application implements LoggerAwareInterface
             ]);
 
             $headers = [
-                'server' => 'YPF-'.static::VERSION,
+                'X-Powered-By' => 'YPF/' . static::VERSION,
                 'content-type' => 'text/plain; charset=utf-8',
             ];
-            $payload = 'Unexpected Server Error';
+            $payload = getenv('DEBUG') ? $ex->__toString() : 'Unexpected Server Error';
 
             return new Response(500, $headers, $payload);
         }
