@@ -28,7 +28,7 @@ final class Dispatcher implements RequestHandlerInterface
 
     public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->handle($request)->withHeader('X-Powered-By', 'YPF/'.Application::VERSION);
+        return $this->handle($request)->withHeader('X-Powered-By', 'YPF/' . Application::VERSION);
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
