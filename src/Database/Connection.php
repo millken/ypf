@@ -405,16 +405,16 @@ class Connection
     public function action($actions)
     {
         if (is_callable($actions)) {
-            $this->pdo->beginTransaction();
+            $this->connection()->beginTransaction();
             try {
                 $result = $actions($this);
                 if ($result === false) {
-                    $this->pdo->rollBack();
+                    $this->connection()->rollBack();
                 } else {
-                    $this->pdo->commit();
+                    $this->connection()->commit();
                 }
             } catch (Exception $e) {
-                $this->pdo->rollBack();
+                $this->connection()->rollBack();
                 throw $e;
             }
 
