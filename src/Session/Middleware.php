@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ypf\Session;
 
-use Yac;
+use Psr\SimpleCache\CacheInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,7 +27,7 @@ class Middleware implements MiddlewareInterface
     private $name = 'ypf_session';
     private $id;
 
-    private $cache;
+    private CacheInterface $cache;
 
     private $cache_limiter = 'nocache';
 
@@ -41,9 +41,9 @@ class Middleware implements MiddlewareInterface
         'httponly' => false,
     ];
 
-    public function __construct()
+    public function __construct(CacheInterface $cache)
     {
-        $this->cache = new Yac('session_');
+        $this->cache = $cache;
 
         return $this;
     }

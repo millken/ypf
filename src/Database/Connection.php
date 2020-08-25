@@ -2,10 +2,10 @@
 
 namespace Ypf\Database;
 
-use PDO;
 use Exception;
-use PDOException;
 use InvalidArgumentException;
+use PDO;
+use PDOException;
 
 class Connection
 {
@@ -35,8 +35,8 @@ class Connection
             'presistent' => false,
         ];
         static::$option = array_merge($default_options, $options);
-        $this->dsn = $options['driver'].':host='.static::$option['host'].';dbname='.static::$option['database'].
-        ';port='.static::$option['port'];
+        $this->dsn = $options['driver'] . ':host=' . static::$option['host'] . ';dbname=' . static::$option['database'] .
+        ';port=' . static::$option['port'];
         if (isset($options['dsn'])) {
             $this->dsn = $options['dsn'];
         }
@@ -47,7 +47,7 @@ class Connection
             $this->commands = [];
         }
         if ($options['charset']) {
-            $this->commands += ["SET NAMES '".$options['charset']."'"];
+            $this->commands += ["SET NAMES '" . $options['charset'] . "'"];
         }
     }
 
@@ -66,8 +66,8 @@ class Connection
             $stmt = $this->connection()->prepare($query);
             $stmt->execute($data);
         } catch (PDOException $e) {
-            throw new Exception('Failed to execute query: '.$query.' Using Parameters: '.print_r($data, true)
-            .' With Error: '.$e->getMessage().' in '.$e->getFile().' on line '.$e->getLine());
+            throw new Exception('Failed to execute query: ' . $query . ' Using Parameters: ' . print_r($data, true)
+                . ' With Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
         }
 
         return $stmt;
@@ -75,26 +75,50 @@ class Connection
 
     protected function tableQuote($table)
     {
-        if (strpos($table, '.') !== false) {
-            return '"'.str_replace('.', '"."', $table).'"';
+        $tableQuote = '';
+        switch (static::$option['driver']) {
+            case 'oracle':
+            case 'pgsql':
+            case 'mssql':
+                $tableQuote = '"';
+                break;
+            default:
+                $tableQuote = '`';
+                break;
         }
 
-        return '"'.static::$option['prefix'].$table.'"';
+        if (strpos($table, '.') !== false) {
+            return $tableQuote . str_replace('.', $tableQuote . '.' . $tableQuote, $table) . $tableQuote;
+        }
+        $table = $tableQuote . static::$option['prefix'] . $table . $tableQuote;
+
+        return $table;
     }
 
     protected function columnQuote($string)
     {
+        $quote = '';
+        switch (static::$option['driver']) {
+            case 'oracle':
+            case 'pgsql':
+            case 'mssql':
+                $quote = '"';
+                break;
+            default:
+                $quote = '`';
+                break;
+        }
         if (strpos($string, '.') !== false) {
             if (strpos($string, '*') !== false) {
-                return '"'.str_replace('.', '".', $string);
+                return $quote . str_replace('.', $quote.'.', $string);
             }
 
-            return '"'.str_replace('.', '"."', $string).'"';
+            return $quote . str_replace('.', $quote.'.'.$quote, $string) . $quote;
         } elseif (strpos($string, '(') !== false || strpos($string, ' ') !== false) {
             return $string;
         }
 
-        return '"'.$string.'"';
+        return $quote . $string . $quote;
     }
 
     public function id()
@@ -102,17 +126,17 @@ class Connection
         $id = 0;
         switch (static::$option['driver']) {
             case 'oracle':
-            $id = 0;
-            break;
+                $id = 0;
+                break;
             case 'pgsql':
-            $id = $this->pdo->query('SELECT LASTVAL()')->fetchColumn();
-            break;
+                $id = $this->pdo->query('SELECT LASTVAL()')->fetchColumn();
+                break;
             case 'mssql':
-            $id = $this->pdo->query('SELECT SCOPE_IDENTITY()')->fetchColumn();
-            break;
+                $id = $this->pdo->query('SELECT SCOPE_IDENTITY()')->fetchColumn();
+                break;
             default:
-            $id = $this->pdo->lastInsertId();
-            break;
+                $id = $this->pdo->lastInsertId();
+                break;
         }
 
         return $id;
@@ -127,7 +151,7 @@ class Connection
         }
 
         $placeholder = substr(str_repeat('?,', count($keys)), 0, -1);
-        $query = 'INSERT INTO '.$this->tableQuote($table).'('.implode(',', $fields).") VALUES ($placeholder)";
+        $query = 'INSERT INTO ' . $this->tableQuote($table) . '(' . implode(',', $fields) . ") VALUES ($placeholder)";
         $this->query($query, array_values($data));
     }
 
@@ -137,11 +161,11 @@ class Connection
         $map = [];
         foreach ($data as $key => $value) {
             $mapkey = $this->mapKey();
-            $fields[] = $this->columnQuote($key).'='.$mapkey;
+            $fields[] = $this->columnQuote($key) . '=' . $mapkey;
             $map[$mapkey] = $value;
         }
-        $query = 'UPDATE '.$this->tableQuote($table).' SET '
-        .implode(',', $fields).$this->whereClause($where, $map);
+        $query = 'UPDATE ' . $this->tableQuote($table) . ' SET '
+        . implode(',', $fields) . $this->whereClause($where, $map);
 
         $this->query($query, $map);
     }
@@ -149,7 +173,7 @@ class Connection
     public function delete(string $table, array $where)
     {
         $map = [];
-        $query = 'DELETE FROM '.$this->tableQuote($table).$this->whereClause($where, $map);
+        $query = 'DELETE FROM ' . $this->tableQuote($table) . $this->whereClause($where, $map);
 
         $this->query($query, $map);
     }
@@ -169,7 +193,7 @@ class Connection
         if ($this->guid >= PHP_INT_MAX) {
             $this->guid = 0;
         }
-        return ':var_'.$this->guid++;
+        return ':var_' . $this->guid++;
     }
 
     protected function dataImplode($data, &$map)
@@ -184,20 +208,20 @@ class Connection
                         $operator = $value['operator'] ?? '';
                         $connector = $value['connector'] ?? 'AND';
                         if (isset($value['value'])) {
-                            $stack[] = (empty($stack) ? '' : (' '.$connector.' ')).$this->columnQuote($field).' '.$operator.' '.$mapkey;
+                            $stack[] = (empty($stack) ? '' : (' ' . $connector . ' ')) . $this->columnQuote($field) . ' ' . $operator . ' ' . $mapkey;
                             $map[$mapkey] = $value['value'];
                         } else {
-                            $stack[] = (empty($stack) ? '' : (' '.$connector.' ')).$this->columnQuote($field).' '.$operator;
+                            $stack[] = (empty($stack) ? '' : (' ' . $connector . ' ')) . $this->columnQuote($field) . ' ' . $operator;
                         }
                     } elseif (isset($value['subexpression'])) {
                         $connector = $value['connector'] ?? 'AND';
-                        $stack[] = (empty($stack) ? '' : (' '.$connector.' ')).'('.$this->dataImplode($value['subexpression'], $map).')';
+                        $stack[] = (empty($stack) ? '' : (' ' . $connector . ' ')) . '(' . $this->dataImplode($value['subexpression'], $map) . ')';
                     }
                 }
             } else {
                 $connector = $value['connector'] ?? 'AND';
                 $mapkey = $this->mapKey();
-                $stack[] = (empty($stack) ? '' : (' '.$connector.' ')).$this->columnQuote($key).'='.$mapkey;
+                $stack[] = (empty($stack) ? '' : (' ' . $connector . ' ')) . $this->columnQuote($key) . '=' . $mapkey;
                 $map[$mapkey] = $value;
             }
         }
@@ -207,29 +231,29 @@ class Connection
 
     /*
     [
-        [
-            'field' => 'id',
-            'operator' => 'like',
-            'value' => '%ab%',
-        ],
-        [
-            'field' => 'number2',
-            'alias' => 'n2',
-            'operator' => '>',
-            'value' => 3,
-        ],
-        [
-            'field' => 'b',
-            'operator' => 'is not null',
-        ],
-        [
-            "connector' => 'OR',
-            'sub' => [
+    [
+    'field' => 'id',
+    'operator' => 'like',
+    'value' => '%ab%',
+    ],
+    [
+    'field' => 'number2',
+    'alias' => 'n2',
+    'operator' => '>',
+    'value' => 3,
+    ],
+    [
+    'field' => 'b',
+    'operator' => 'is not null',
+    ],
+    [
+    "connector' => 'OR',
+    'sub' => [
 
-            ]
-        ]
     ]
-    */
+    ]
+    ]
+     */
     protected function whereClause(array $where, &$map)
     {
         $where_clause = '';
@@ -239,7 +263,7 @@ class Connection
                 ['GROUP', 'HAVING', 'ORDER', 'LIMIT']
             ));
             if (!empty($conditions)) {
-                $where_clause = ' WHERE '.$this->dataImplode($conditions, $map);
+                $where_clause = ' WHERE ' . $this->dataImplode($conditions, $map);
             }
             if (isset($where['GROUP'])) {
                 $GROUP = $where['GROUP'];
@@ -248,17 +272,17 @@ class Connection
                     foreach ($GROUP as $column => $value) {
                         $stack[] = $this->columnQuote($value);
                     }
-                    $where_clause .= ' GROUP BY '.implode(',', $stack);
+                    $where_clause .= ' GROUP BY ' . implode(',', $stack);
                 } elseif ($raw = $this->buildRaw($GROUP, $map)) {
-                    $where_clause .= ' GROUP BY '.$raw;
+                    $where_clause .= ' GROUP BY ' . $raw;
                 } else {
-                    $where_clause .= ' GROUP BY '.$this->columnQuote($GROUP);
+                    $where_clause .= ' GROUP BY ' . $this->columnQuote($GROUP);
                 }
                 if (isset($where['HAVING'])) {
                     if ($raw = $this->buildRaw($where['HAVING'], $map)) {
-                        $where_clause .= ' HAVING '.$raw;
+                        $where_clause .= ' HAVING ' . $raw;
                     } else {
-                        $where_clause .= ' HAVING '.$this->dataImplode($where['HAVING'], $map, ' AND');
+                        $where_clause .= ' HAVING ' . $this->dataImplode($where['HAVING'], $map, ' AND');
                     }
                 }
             }
@@ -268,16 +292,16 @@ class Connection
                     $stack = [];
                     foreach ($ORDER as $column => $value) {
                         if (is_array($value)) {
-                            $stack[] = 'FIELD('.$this->columnQuote($column).', '.$this->arrayQuote($value).')';
+                            $stack[] = 'FIELD(' . $this->columnQuote($column) . ', ' . $this->arrayQuote($value) . ')';
                         } elseif ($value === 'ASC' || $value === 'DESC') {
-                            $stack[] = $this->columnQuote($column).' '.$value;
+                            $stack[] = $this->columnQuote($column) . ' ' . $value;
                         } elseif (is_int($column)) {
                             $stack[] = $this->columnQuote($value);
                         }
                     }
-                    $where_clause .= ' ORDER BY '.implode(',',$stack);
+                    $where_clause .= ' ORDER BY ' . implode(',', $stack);
                 } else {
-                    $where_clause .= ' ORDER BY '.$this->columnQuote($ORDER);
+                    $where_clause .= ' ORDER BY ' . $this->columnQuote($ORDER);
                 }
                 if (
                     isset($where['LIMIT']) &&
@@ -292,21 +316,21 @@ class Connection
                         is_numeric($LIMIT[0]) &&
                         is_numeric($LIMIT[1])
                     ) {
-                        $where_clause .= ' OFFSET '.$LIMIT[0].' ROWS FETCH NEXT '.$LIMIT[1].' ROWS ONLY';
+                        $where_clause .= ' OFFSET ' . $LIMIT[0] . ' ROWS FETCH NEXT ' . $LIMIT[1] . ' ROWS ONLY';
                     }
                 }
             }
             if (isset($where['LIMIT'])
-            && !in_array(static::$option['driver'], ['oracle', 'mssql'])) {
+                && !in_array(static::$option['driver'], ['oracle', 'mssql'])) {
                 $LIMIT = $where['LIMIT'];
                 if (is_numeric($LIMIT)) {
-                    $where_clause .= ' LIMIT '.$LIMIT;
+                    $where_clause .= ' LIMIT ' . $LIMIT;
                 } elseif (
                     is_array($LIMIT) &&
                     is_numeric($LIMIT[0]) &&
                     is_numeric($LIMIT[1])
                 ) {
-                    $where_clause .= ' LIMIT '.$LIMIT[1].' OFFSET '.$LIMIT[0];
+                    $where_clause .= ' LIMIT ' . $LIMIT[1] . ' OFFSET ' . $LIMIT[0];
                 }
             }
         }
@@ -316,9 +340,9 @@ class Connection
 
     /*
     [
-        'table' => ['a', 'b'],
-        'join' => "left join",
-        'on' => ['a.id', 'b.aid']
+    'table' => ['a', 'b'],
+    'join' => "left join",
+    'on' => ['a.id', 'b.aid']
     ]
      */
     public function select($table, string $field = '*', array $where = [])
@@ -330,7 +354,7 @@ class Connection
             $on = $table['on'] ?? [];
             $table = $tables[0];
 
-            $join_table = " $join ".$this->tableQuote($tables[1]).' ON '.$this->columnQuote($on[0]).'='.$this->columnQuote($on[1]);
+            $join_table = " $join " . $this->tableQuote($tables[1]) . ' ON ' . $this->columnQuote($on[0]) . '=' . $this->columnQuote($on[1]);
         }
         $cloumnMap = ['*'];
         if ($field !== '*') {
@@ -342,8 +366,8 @@ class Connection
         }
         $map = [];
 
-        $query = 'SELECT '.implode(',', $cloumnMap).' FROM '
-        .$this->tableQuote($table).$join_table.$this->whereClause($where, $data);
+        $query = 'SELECT ' . implode(',', $cloumnMap) . ' FROM '
+        . $this->tableQuote($table) . $join_table . $this->whereClause($where, $data);
 
         return $this->fetchAll($query, $data);
     }
@@ -457,11 +481,11 @@ class Connection
             $on = $table['on'] ?? [];
             $table = $tables[0];
 
-            $join_table = " $join ".$this->tableQuote($tables[1]).' ON '.$this->columnQuote($on[0]).'='.$this->columnQuote($on[1]);
+            $join_table = " $join " . $this->tableQuote($tables[1]) . ' ON ' . $this->columnQuote($on[0]) . '=' . $this->columnQuote($on[1]);
         }
         $field = $field == '*' ? '*' : $this->columnQuote($field);
-        $query = 'SELECT '.strtoupper($type).'('.$field.') FROM '
-        .$this->tableQuote($table).$join_table.$this->whereClause($where, $data);
+        $query = 'SELECT ' . strtoupper($type) . '(' . $field . ') FROM '
+        . $this->tableQuote($table) . $join_table . $this->whereClause($where, $data);
 
         $stmt = $this->query($query, $data);
 
