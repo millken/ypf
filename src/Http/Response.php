@@ -31,4 +31,14 @@ class Response
             ->withAddedHeader('Location', $url)
             ->withStatus(302);
     }
+
+    public function stream_for(string $data)
+    {
+        return stream_for($data);
+    }
+
+    public function __call($funName, $arguments)
+    {
+        return call_user_func_array([$this->response, $funName], $arguments);
+    }
 }
