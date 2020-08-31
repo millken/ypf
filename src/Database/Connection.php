@@ -6,6 +6,7 @@ use Exception;
 use InvalidArgumentException;
 use PDO;
 use PDOException;
+use stdClass;
 
 class Connection
 {
@@ -16,7 +17,9 @@ class Connection
     protected $pdo;
     protected $commands;
     protected $guid = 0;
+    protected $listen = null;
 
+    
     public function __construct($options = [])
     {
         if (!is_array($options)) {
@@ -55,6 +58,8 @@ class Connection
     {
         $this->lastsql = $query;
         $this->sqldata = $data;
+        $startTime = sprintf("%.3f", microtime(true));
+
         if (PHP_SAPI == 'cli') {
             try {
                 @$this->connection()->getAttribute(PDO::ATTR_SERVER_INFO);
@@ -69,7 +74,11 @@ class Connection
             throw new Exception('Failed to execute query: ' . $query . ' Using Parameters: ' . print_r($data, true)
                 . ' With Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
         }
+        $spentTime = sprintf("%.3f", microtime(true)) - $startTime;
 
+        if(is_callable($this->listen)) {
+            call_user_func($this->listen, (object)['sql' => $this->sql(), 'time' => $spentTime]);
+        }
         return $stmt;
     }
 
@@ -419,6 +428,11 @@ class Connection
         $this->pdo = null;
 
         return $this->connect();
+    }
+
+    public function listen($callback)
+    {
+        $this->listen = $callback;
     }
 
     protected function connection()
