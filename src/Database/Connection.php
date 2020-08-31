@@ -77,7 +77,7 @@ class Connection
         $spentTime = sprintf("%.3f", microtime(true)) - $startTime;
 
         if(is_callable($this->listen)) {
-            call_user_func($this->listen, (object)['sql' => $this->sql(), 'time' => $spentTime]);
+            call_user_func($this->listen, (object)['sql' => $this->sql(), 'time' => $spentTime, 'row' => $stmt->rowCount()]);
         }
         return $stmt;
     }
