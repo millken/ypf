@@ -58,7 +58,7 @@ class Connection
     {
         $this->lastsql = $query;
         $this->sqldata = $data;
-        $startTime = sprintf("%.3f", microtime(true));
+        $startTime = microtime(true);
 
         if (PHP_SAPI == 'cli') {
             try {
@@ -74,10 +74,10 @@ class Connection
             throw new Exception('Failed to execute query: ' . $query . ' Using Parameters: ' . print_r($data, true)
                 . ' With Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
         }
-        $spentTime = sprintf("%.3f", microtime(true)) - $startTime;
+        $spentTime = microtime(true) - $startTime;
 
         if(is_callable($this->listen)) {
-            call_user_func($this->listen, (object)['sql' => $this->sql(), 'time' => $spentTime, 'row' => $stmt->rowCount()]);
+            call_user_func($this->listen, (object)['sql' => $this->sql(), 'time' => self::timeToHuman($spentTime), 'row' => $stmt->rowCount()]);
         }
         return $stmt;
     }
@@ -515,6 +515,32 @@ class Connection
             array_unshift($arguments, $name);
 
             return call_user_func_array([$this, 'aggregate'], $arguments);
+        }
+    }
+
+    private static function timeToHuman($microTime, $unit = 'auto', $decimals = 2)
+    {
+        if($unit == "auto")
+        {
+            if ($microTime > 1)
+                $unit = 's';
+            elseif($microTime > 0.001)
+                $unit = 'ms';
+            else
+                $unit = 'μs';
+        }
+
+        switch ($unit)
+        {
+            case 'μs':
+                return round($microTime * 1000000, $decimals) . ' ' . $unit;
+                break;
+            case 'ms':
+                return round($microTime * 1000, $decimals) . ' ' . $unit;
+                break;
+            default:
+                return round($microTime * 1, $decimals) . ' ' . $unit;
+                break;
         }
     }
 }
