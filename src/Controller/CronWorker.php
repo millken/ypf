@@ -13,5 +13,5 @@ abstract class CronWorker
         return Application::getContainer()->get($name);
     }
 
-    abstract protected function run();
+    abstract public function run();
 }
