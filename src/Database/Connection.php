@@ -515,6 +515,8 @@ class Connection
             array_unshift($arguments, $name);
 
             return call_user_func_array([$this, 'aggregate'], $arguments);
+        }else{
+            throw new PDOException("Method : $name not exist");
         }
     }
 
