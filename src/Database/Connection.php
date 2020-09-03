@@ -430,7 +430,7 @@ class Connection
         return $this->connect();
     }
 
-    public function listen($callback)
+    public function listen(callable $callback): void
     {
         $this->listen = $callback;
     }
@@ -440,7 +440,7 @@ class Connection
         return $this->pdo instanceof PDO ? $this->pdo : $this->connect();
     }
 
-    public function action($actions)
+    public function action(callable $actions)
     {
         if (is_callable($actions)) {
             $this->connection()->beginTransaction();

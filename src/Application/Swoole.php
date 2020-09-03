@@ -98,10 +98,10 @@ class Swoole implements LoggerAwareInterface
         //     'data' => $data,
         //     ]);
 
-        $task = SwooleSerialize::unpack($data);
+        $task = unserialize($data);
         $unit = Application::getContainer()->get($task->getClass());
-        $result = $unit->run($task->getPayload());
-        $server->finish(SwooleSerialize::pack($result, 1));
+        $result = call_user_func([$unit, $task->getMethod()], $task->getParameter());
+        $server->finish(serialize($result));
 
         return $result;
     }

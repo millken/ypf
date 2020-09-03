@@ -7,13 +7,13 @@ namespace Ypf\Swoole\Tasks;
 class Task
 {
     private $class;
-    private $payload = null;
-    private $callback;
+    private $parameter = null;
+    private $method;
 
-    public function __construct(string $class, callable $callback = null)
+    public function __construct(string $class, string $method = null)
     {
         $this->class = $class;
-        $this->callback = $callback;
+        $this->method = $method;
     }
 
     public function getClass(): string
@@ -21,25 +21,23 @@ class Task
         return $this->class;
     }
 
-    public function withPayload($payload): void
+    public function withParameter($parameter): void
     {
-        $this->payload = $payload;
+        $this->parameter = $parameter;
     }
 
-    public function getPayload()
+    public function getParameter()
     {
-        return $this->payload;
+        return $this->parameter;
     }
 
-    public function withCallback(callable $callback): void
+    public function withMethod(string $method): void
     {
-        $this->callback = $callback;
+        $this->method = $method;
     }
 
-    public function getCallback(): callable
+    public function getMethod(): string
     {
-        return $this->callback ?? function () {
-            // Nothing to do
-        };
+        return $this->method;
     }
 }
