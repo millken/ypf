@@ -417,7 +417,7 @@ class Connection
             }
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            throw new PDOException($e);
+            throw $e;
         }
 
         return $this->pdo;
